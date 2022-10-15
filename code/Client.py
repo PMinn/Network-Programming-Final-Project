@@ -7,10 +7,26 @@
 import sys
 import socket
 import threading
+import tkinter as tk
+import tkinter.simpledialog as sd
 
 PORT = 6666
 BUF_SIZE = 1024			# Receive buffer size
 
+class Dialog(sd.Dialog):
+    def __init__(self, parent, title, text):
+        self.text = text
+        super().__init__(parent, title)
+        
+    def body(self, frame):
+        tk.Label(frame, text = self.text, justify = 'left', width = 50, pady = 10).pack()
+
+    def buttonbox(self):
+        self.ok__button = tk.Button(self, text = '好', command = self.ok_pressed, default = 'active', width = 5)
+        self.ok__button.pack(side = 'bottom', pady = 10, expand = True)
+
+    def ok_pressed(self):
+        self.destroy()
 
 class ClientThread(threading.Thread):
     def __init__(self, cSocket):
@@ -31,21 +47,53 @@ class ClientThread(threading.Thread):
             print(f'from: {data[1]}\n------------')
             client_msg = self.cSocket.recv(BUF_SIZE)
 
-def main():
-	# Get server IP
-	# serverIP = socket.gethostbyname(sys.argv[1])
-    serverIP = socket.gethostbyname('127.0.0.1')
-	
-	# Create a TCP client socket
-    cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # Connect to server
-    print('Connecting to %s port %s' % (serverIP, PORT))
-    cSocket.connect((serverIP, PORT))
+class LoginWindow(tk.Tk):
+    def __init__(self, title):
+        super().__init__(title)
+        self.geometry("400x300")
+
+        self.grid_columnconfigure(0, weight = 1)
+        self.grid_columnconfigure(1, weight = 2)
+
+        ipLabel = tk.Label(self ,text = "server IP")
+        ipLabel.grid(row = 0, column = 0)
+        self.ipEntry = tk.Entry(self)
+        self.ipEntry.grid(row = 0, column = 1)
+        self.ipEntry.insert(0, '127.0.0.1')
+
+        accountLabel = tk.Label(self ,text = "名稱")
+        accountLabel.grid(row = 1, column = 0)
+        self.accountEntry = tk.Entry(self)
+        self.accountEntry.grid(row = 1, column = 1)
+
+        self.start_btn = tk.Button(self, text='連線', command = lambda:serverConnecting(self))
+        self.start_btn.grid(row = 2, column = 0,columnspan = 2, pady = 20)#, sticky = "WENS"
+        self.mainloop()
+
+def serverConnecting(window):
+    window.start_btn["state"] = tk.DISABLED
+    serverIP = socket.gethostbyname(window.ipEntry.get())
+
+    try:
+        print('Connecting to %s port %s' % (serverIP, PORT))
+        cSocket.connect((serverIP, PORT))
+    except socket.error as e:
+        window.start_btn["state"] = tk.NORMAL
+        Dialog(window, 'Socket error', str(e))
+        print('Socket error: %s' % str(e))
+        return
+    except Exception as e:
+        window.start_btn["state"] = tk.NORMAL
+        print('Other exception: %s' % str(e))
+        Dialog(window, 'Other exception', str(e))
+        return 
+    serverStart()
+
+def serverStart():
     ClientThread(cSocket)
-    # Send message to server
     try:
         while(1):
-            msg = str(input(""))
+            msg = str(input())
             print('from: me\n------------')
             cmd = f"message^^%id%^^{msg}\0"
             #sys.getsizeof(msg)
@@ -56,11 +104,8 @@ def main():
         print('Other exception: %s' % str(e))
     finally:
         print('Closing connection.')
-    		# Close the TCP socket
+            # Close the TCP socket
     #cSocket.close()
 
-# end of main
-
-
-if __name__ == '__main__':
-	main()
+cSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+window = LoginWindow("123456")
