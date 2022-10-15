@@ -12,8 +12,8 @@ backlog = 5
 BUF_SIZE = 1024			# Receive buffer size
 
 class ServerThread(threading.Thread):
-    def __init__(self, t_name, client_sc, rip, rport):
-        super().__init__(name = t_name)
+    def __init__(self, client_sc, rip, rport):
+        super().__init__()
         self.client = client_sc
         self.rip = rip
         self.rport = rport
@@ -52,14 +52,10 @@ def main():
     srvSocket.listen(backlog)
 	
 	# Accept the incomming connection
-    counter = 1
     while(1):
-        t_name = 'Thread ' + str(counter)
-        counter += 1
         print('Waiting to receive message from client')
         client, (rip, rport) = srvSocket.accept()
-        print('Got connection. Create thread: %s' % t_name)
-        ServerThread(t_name, client, rip, rport)
+        ServerThread(client, rip, rport)
     
     srvSocket.close()
 # end of main
