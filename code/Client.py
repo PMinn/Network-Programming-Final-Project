@@ -4,15 +4,70 @@
 #  The program is a simple TCP client.            		
 #  2021.07.13                                                   									
 ####################################################
-import sys
+#import sys
 import socket
 import threading
 import tkinter as tk
 import tkinter.simpledialog as sd
+import tkinter.font as tkFont
 
 PORT = 6666
 BUF_SIZE = 1024			# Receive buffer size
 
+class RoundedButton(tk.Canvas):
+  def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None):
+    tk.Canvas.__init__(self, parent, borderwidth=0,
+                       relief="raised", highlightthickness=0, bg=parent["bg"])
+    self.command = command
+    font_size = 10
+    self.font = tkFont.Font(size=font_size, family='Helvetica')
+    self.id = None
+    if height == -1:
+        height = font_size + (1 * padding)
+    if width == -1:
+        width = self.font.measure(text)+(1*padding)
+
+    width = width if width >= 80 else 80
+
+    if border_radius > 0.5*width:
+      print("Error: border_radius is greater than width.")
+      return None
+
+    if border_radius > 0.5*height:
+      print("Error: border_radius is greater than height.")
+      return None
+
+    rad = 2*border_radius
+
+    def shape():
+      self.create_arc((0, rad, rad, 0),
+                      start=90, extent=90, fill=color, outline=color)
+      self.create_arc((width-rad, 0, width,
+                        rad), start=0, extent=90, fill=color, outline=color)
+      self.create_arc((width, height-rad, width-rad,
+                        height), start=270, extent=90, fill=color, outline=color)
+      self.create_arc((0, height-rad, rad, height), start=180, extent=90, fill=color, outline=color)
+      return self.create_polygon((0, height-border_radius, 0, border_radius, border_radius, 0, width-border_radius, 0, width,
+                           border_radius, width, height-border_radius, width-border_radius, height, border_radius, height),
+                                 fill=color, outline=color)
+
+    self.id = shape()
+    (x0, y0, x1, y1) = self.bbox("all")
+    width = (x1-x0)
+    height = (y1-y0)
+    self.configure(width=width, height=height)
+    self.create_text(width/2, height/2,text=text, fill='black', font= self.font)
+    self.bind("<ButtonPress-1>", self._on_press)
+    self.bind("<ButtonRelease-1>", self._on_release)
+
+  def _on_press(self, event):
+      self.configure(relief="sunken")
+
+  def _on_release(self, event):
+      self.configure(relief="raised")
+      if self.command is not None:
+          self.command()
+          
 class Dialog(sd.Dialog):
     def __init__(self, parent, title, text):
         self.text = text
@@ -70,6 +125,51 @@ class LoginWindow(tk.Tk):
         self.start_btn.grid(row = 2, column = 0,columnspan = 2, pady = 20)#, sticky = "WENS"
         self.mainloop()
 
+class GameWindow(tk.Toplevel):
+    def __init__(self, account):
+        super().__init__()
+        self.title(account)
+        self.geometry("1000x563")
+        self.protocol("WM_DELETE_WINDOW", self.exit)
+        tk.Frame(self).pack(side = "left", fill = "both", expand = True)
+        ChatRoom(self).pack(side = "right", fill = "y", expand = False)
+
+        '''
+        menubar = tk.Menu(self)
+        menubar.add_cascade(label = "刷新信箱", command = self.refresh)
+        menubar.add_cascade(label = "復原刪除信件", command = self.reset)
+        self.configure(menu = menubar)
+        '''
+    def exit(self):
+        self.destroy()
+
+class ScrollableFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        vscrollbar = tk.Scrollbar(self, orient = 'vertical')
+        vscrollbar.pack(fill = 'y', side = 'right', expand = False)
+        self.canvas = tk.Canvas(self, bd = 0, highlightthickness = 0, yscrollcommand = vscrollbar.set)
+        vscrollbar.config(command = self.canvas.yview)
+        self.frame = tk.Frame(self.canvas, bg = "#EDF0F5")
+        self.canvas.config(yscrollcommand = vscrollbar.set)
+        self._frame_id = self.canvas.create_window(0, 0, window = self.frame, anchor = 'nw')
+        self.canvas.pack(side = 'left', fill = 'both', expand = True)
+        self.canvas.bind("<Configure>", self.resize_frame)
+        
+    def resize_frame(self, e):
+        self.canvas.itemconfig(self._frame_id, height = e.height, width = e.width)
+
+class ChatRoom(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, width = 400)
+        ScrollableFrame(self).pack(side = "top", fill = "both", expand = True)
+        chatController = tk.Frame(self, height = 30)
+        chatController.pack(side = "bottom", fill = "x")
+        messageEntry = tk.Entry(chatController, highlightthickness = 0)
+        messageEntry.pack(side = "left", fill = "both", expand = True, ipadx=5,ipady=5)
+        sendMessage_btn = RoundedButton(chatController, text=">", height=30, border_radius=2, padding=4, command=lambda:serverConnecting(self), color="#01A38B")
+        sendMessage_btn.pack(side = "right", expand = False, ipadx=5,ipady=5)
+        
 def serverConnecting(window):
     window.start_btn["state"] = tk.DISABLED
     serverIP = socket.gethostbyname(window.ipEntry.get())
@@ -87,10 +187,11 @@ def serverConnecting(window):
         print('Other exception: %s' % str(e))
         Dialog(window, 'Other exception', str(e))
         return 
-    serverStart()
+    serverStart(window.accountEntry.get())
 
-def serverStart():
+def serverStart(name):
     ClientThread(cSocket)
+    GameWindow(name)
     try:
         while(1):
             msg = str(input())
