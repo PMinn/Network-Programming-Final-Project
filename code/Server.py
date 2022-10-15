@@ -11,6 +11,8 @@ PORT = 6666
 backlog = 5
 BUF_SIZE = 1024			# Receive buffer size
 
+clients = []
+
 class ServerThread(threading.Thread):
     def __init__(self, client_sc, rip, rport):
         super().__init__()
@@ -29,16 +31,16 @@ class ServerThread(threading.Thread):
             while data[len(data)-1]!='\0':
                 client_msg = self.client.recv(BUF_SIZE)
                 data += client_msg.decode('utf-8')
-            cmd = data.split(',')
-            sizeOfMsg = int(cmd[2])
-            print(f'size:{sizeOfMsg}')
-            print(cmd[3])
+            #cmd = data.split(',')
+            #sizeOfMsg = int(cmd[2])
+            #print(f'size:{sizeOfMsg}')
+            #print(cmd[3])
+            for client in clients:
+                if client.rip != self.rip or client.rport != self.rport:
+                    client.client.send(data.replace("%id%", f"{self.rip}:{self.rport}").encode('utf-8'))
             client_msg = self.client.recv(BUF_SIZE)
         #self.client.close()
-        
-    def recvMsgContent(self, size):
-        client_msg = self.client.recv(size)
-        print(client_msg.decode('utf-8'))
+
 
 def main():
 	# Create a TCP Server socket
@@ -58,7 +60,7 @@ def main():
     while(1):
         print('Waiting to receive message from client')
         client, (rip, rport) = srvSocket.accept()
-        ServerThread(client, rip, rport)
+        clients.append(ServerThread(client, rip, rport))
     
     srvSocket.close()
 # end of main
