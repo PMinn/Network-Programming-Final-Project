@@ -25,13 +25,16 @@ class ServerThread(threading.Thread):
         client_msg = self.client.recv(BUF_SIZE)
 
         while client_msg:
-            cmd = client_msg.decode('utf-8').split(',')
-            self.client.send('111'.encode('utf-8'))
+            data = client_msg.decode('utf-8')
+            while data[len(data)-1]!='\0':
+                client_msg = self.client.recv(BUF_SIZE)
+                data += client_msg.decode('utf-8')
+            cmd = data.split(',')
             sizeOfMsg = int(cmd[2])
             print(f'size:{sizeOfMsg}')
-            self.recvMsgContent(sizeOfMsg)
+            print(cmd[3])
             client_msg = self.client.recv(BUF_SIZE)
-        self.client.close()
+        #self.client.close()
         
     def recvMsgContent(self, size):
         client_msg = self.client.recv(size)
