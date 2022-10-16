@@ -16,6 +16,7 @@ BUF_SIZE=1024			# Receive buffer size
 
 class RoundedCanvas(tk.Canvas):
     def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None, cursor="arrow"):
+        font_size=10
         if height == -1:
             height=font_size + (1 * padding)
         if width == -1:
@@ -23,19 +24,14 @@ class RoundedCanvas(tk.Canvas):
         #width=width if width >= 80 else 80
         tk.Canvas.__init__(self, parent, borderwidth=0, relief="raised", highlightthickness=0, bg=parent["bg"], cursor=cursor)
         self.command=command
-        font_size=10
         self.font=tkFont.Font(size=font_size, family='Helvetica')
         self.id=None
-
-    
         if border_radius > 0.5*width:
           print("Error: border_radius is greater than width.")
           return None
-    
         if border_radius > 0.5*height:
           print("Error: border_radius is greater than height.")
           return None
-    
         rad=2*border_radius
         
         def shape():
