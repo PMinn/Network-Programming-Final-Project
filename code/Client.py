@@ -50,18 +50,20 @@ class RoundedButton(tk.Canvas):
         width=(x1-x0)
         height=(y1-y0)
         self.configure(width=width, height=height)
-        self.bind("<ButtonPress-1>", self._on_press)
+        # self.bind("<ButtonPress-1>", self._on_press)
         self.bind("<ButtonRelease-1>", self._on_release)
         
     def _on_press(self, event):
         self.configure(relief="sunken")
 
     def _on_release(self, event):
-      self.configure(relief="raised")
+    #   self.configure(relief="raised")
       if self.command is not None:
           self.command()
           
-
+class RadiusButton(RoundedButton):
+    def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None):
+        super().__init__(parent, border_radius, padding, color, height=-1, width=-1, text='', command=None)
         
 class Dialog(sd.Dialog):
     def __init__(self, parent, title, text):
@@ -154,18 +156,36 @@ class ScrollableFrame(tk.Frame):
     def resize_frame(self, e):
         self.canvas.itemconfig(self._frame_id, height=e.height, width=e.width)
 
+class ChatFrame(ScrollableFrame):
+    def __init__(self, parent, bgc):
+        self.bgc=bgc
+        super().__init__(parent, bgc)
+        self.pack(side="top", fill="both", expand=True)
+
+    def getLastRow(self):
+        return self.frame.grid_size()[1]
+
+    def sendMessage(self, text):
+        lb=tk.Label(self.frame, text=text, bg=self.bgc)
+        lb.grid(row=self.getLastRow(), column=1)
+
 class ChatRoom(tk.Frame):
     def __init__(self, parent):
         self.bgc="#EDF0F5"
         super().__init__(parent, width=400, bg=self.bgc)
-        ScrollableFrame(self, self.bgc).pack(side="top", fill="both", expand=True)
+        self.chatFrame=ChatFrame(self, self.bgc)
         chatController=tk.Frame(self, height=30, bg=self.bgc)
         chatController.pack(side="bottom", fill="x",padx=10, pady=10, expand=False)
-        messageEntry=tk.Entry(chatController, highlightthickness=0)
-        messageEntry.pack(side="left", fill="both", expand=True, padx=(0,5))
-        sendMessage_btn=RoundedButton(chatController, text=">", height=30, width=30, border_radius=4, padding=0, command=lambda:serverConnecting(self), color="#01A38B")
+        self.messageEntry=tk.Entry(chatController, highlightthickness=0)
+        self.messageEntry.pack(side="left", fill="both", expand=True, padx=(0,5))
+        sendMessage_btn=RoundedButton(chatController, text=">", height=30, width=30, border_radius=4, padding=0, command=self.sendMessage, color="#01A38B")
         sendMessage_btn.pack(side="right", expand=False)
-        
+
+    def sendMessage(self):
+        text=self.messageEntry.get()
+        if text.replace(' ','') != '':
+            self.chatFrame.sendMessage(text)
+
 def serverConnecting(window):
     window.start_btn["state"]=tk.DISABLED
     serverIP=socket.gethostbyname(window.ipEntry.get())
