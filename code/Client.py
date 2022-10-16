@@ -14,14 +14,14 @@ import tkinter.font as tkFont
 PORT=6666
 BUF_SIZE=1024			# Receive buffer size
 
-class RoundedButton(tk.Canvas):
-    def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None):
+class RoundedCanvas(tk.Canvas):
+    def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None, cursor="arrow"):
         if height == -1:
             height=font_size + (1 * padding)
         if width == -1:
             width=self.font.measure(text)
         #width=width if width >= 80 else 80
-        tk.Canvas.__init__(self, parent, borderwidth=0, relief="raised", highlightthickness=0, bg=parent["bg"], cursor="hand2")
+        tk.Canvas.__init__(self, parent, borderwidth=0, relief="raised", highlightthickness=0, bg=parent["bg"], cursor=cursor)
         self.command=command
         font_size=10
         self.font=tkFont.Font(size=font_size, family='Helvetica')
@@ -50,21 +50,16 @@ class RoundedButton(tk.Canvas):
         width=(x1-x0)
         height=(y1-y0)
         self.configure(width=width, height=height)
-        # self.bind("<ButtonPress-1>", self._on_press)
+          
+class RadiusButton(RoundedCanvas):
+    def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None):
+        super().__init__(parent, border_radius, padding, color, height=-1, width=-1, text='', command=None, cursor="hand2")
         self.bind("<ButtonRelease-1>", self._on_release)
-        
-    def _on_press(self, event):
-        self.configure(relief="sunken")
 
     def _on_release(self, event):
-    #   self.configure(relief="raised")
       if self.command is not None:
           self.command()
-          
-class RadiusButton(RoundedButton):
-    def __init__(self, parent, border_radius, padding, color, height=-1, width=-1, text='', command=None):
-        super().__init__(parent, border_radius, padding, color, height=-1, width=-1, text='', command=None)
-        
+
 class Dialog(sd.Dialog):
     def __init__(self, parent, title, text):
         self.text=text
@@ -178,7 +173,7 @@ class ChatRoom(tk.Frame):
         chatController.pack(side="bottom", fill="x",padx=10, pady=10, expand=False)
         self.messageEntry=tk.Entry(chatController, highlightthickness=0)
         self.messageEntry.pack(side="left", fill="both", expand=True, padx=(0,5))
-        sendMessage_btn=RoundedButton(chatController, text=">", height=30, width=30, border_radius=4, padding=0, command=self.sendMessage, color="#01A38B")
+        sendMessage_btn=RadiusButton(chatController, text=">", height=30, width=30, border_radius=4, padding=0, command=self.sendMessage, color="#01A38B")
         sendMessage_btn.pack(side="right", expand=False)
 
     def sendMessage(self):
