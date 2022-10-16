@@ -60,7 +60,7 @@ class RadiusButton(RoundedCanvas):
         self.bind("<ButtonRelease-1>", self._on_release)
 
     def _on_release(self, event):
-      if self.command is not None:
+      if self.command is not None and self["state"] == tk.NORMAL:
           self.command()
 
 class Dialog(sd.Dialog):
@@ -81,23 +81,32 @@ class Dialog(sd.Dialog):
 class LoginWindow(tk.Tk):
     def __init__(self, title):
         super().__init__(title)
+        self.bgc="#161819"
+        self.color="#fff"
+        self.selectbackground="#555555"
+        self.input_bgc="#1D1F20"
         self.geometry("400x300")
-
+        self.configure(bg=self.bgc)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=2)
 
-        ipLabel=tk.Label(self ,text="server IP")
-        ipLabel.grid(row=0, column=0)
-        self.ipEntry=tk.Entry(self)
-        self.ipEntry.grid(row=0, column=1)
+        plane=tk.Frame(self, bg=self.bgc)
+        plane.place(relx=0.5, rely=0.5, anchor="center")
+        ipLabel=tk.Label(plane ,text="server IP", bg=self.bgc, fg=self.color)
+        ipLabel.grid(row=0, column=0, padx=10, pady=10)
+        self.ipEntry=tk.Entry(plane, bg=self.input_bgc, fg=self.color, highlightthickness=1, highlightcolor=self.selectbackground, highlightbackground=self.selectbackground, insertbackground=self.color)
+        self.ipEntry.config(selectbackground=self.selectbackground, bd=0)
+        self.ipEntry.grid(row=0, column=1, padx=10, pady=10)
         self.ipEntry.insert(0, '127.0.0.1')
 
-        accountLabel=tk.Label(self ,text="名稱")
-        accountLabel.grid(row=1, column=0)
-        self.accountEntry=tk.Entry(self)
-        self.accountEntry.grid(row=1, column=1)
+        accountLabel=tk.Label(plane ,text="名稱", bg=self.bgc, fg=self.color)
+        accountLabel.grid(row=1, column=0, padx=10, pady=10)
+        self.accountEntry=tk.Entry(plane, bg=self.input_bgc, fg=self.color, highlightthickness=1, highlightcolor=self.selectbackground, highlightbackground=self.selectbackground, insertbackground=self.color)
+        self.accountEntry.config(selectbackground=self.selectbackground, bd=0)
+        self.accountEntry.grid(row=1, column=1, padx=10, pady=10)
 
-        self.start_btn=tk.Button(self, text='連線', command=lambda:serverConnecting(self))
+        # self.start_btn=tk.Button(plane, text='連線', command=lambda:serverConnecting(self))
+        self.start_btn=RadiusButton(plane, text="連線", border_radius=4, padding=10, command=lambda:serverConnecting(self), bgc="#EC6D46", color="#fff")
         self.start_btn.grid(row=2, column=0,columnspan=2, pady=20)#, sticky="WENS"
         self.mainloop()
 
@@ -184,7 +193,6 @@ class ChatRoom(tk.Frame):
 class ClientThread(threading.Thread):
     def __init__(self, gameWindow):
         super().__init__()
-        # self.cSocket=cSocket
         self.gameWindow=gameWindow
         self.start()
 
