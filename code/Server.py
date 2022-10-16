@@ -24,21 +24,23 @@ class ServerThread(threading.Thread):
 
     def run(self):
         #name = threading.current_thread().name
-        client_msg = self.client.recv(BUF_SIZE)
-
-        while client_msg:
-            data = client_msg.decode('utf-8')
-            while data[len(data)-1]!='\0':
-                client_msg = self.client.recv(BUF_SIZE)
-                data += client_msg.decode('utf-8')
-            #cmd = data.split(',')
-            #sizeOfMsg = int(cmd[2])
-            #print(f'size:{sizeOfMsg}')
-            #print(cmd[3])
-            for client in clients:
-                if client.rip != self.rip or client.rport != self.rport:
-                    client.client.send(data.replace("%id%", f"{self.rip}:{self.rport}").encode('utf-8'))
+        try:
             client_msg = self.client.recv(BUF_SIZE)
+            while client_msg:
+                data = client_msg.decode('utf-8')
+                while data[len(data)-1]!='\0':
+                    client_msg = self.client.recv(BUF_SIZE)
+                    data += client_msg.decode('utf-8')
+                #cmd = data.split(',')
+                #sizeOfMsg = int(cmd[2])
+                #print(f'size:{sizeOfMsg}')
+                #print(cmd[3])
+                for client in clients:
+                    if client.rip != self.rip or client.rport != self.rport:
+                        client.client.send(data.replace("%id%", f"{self.rip}:{self.rport}").encode('utf-8'))
+                client_msg = self.client.recv(BUF_SIZE)
+        finally:
+            clients.remove(self)
         #self.client.close()
 
 
