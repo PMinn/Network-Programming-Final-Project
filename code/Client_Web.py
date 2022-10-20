@@ -279,7 +279,7 @@ class ClientThread2(threading.Thread):
             print(data[2])
             print(f'from: {data[1]}\n------------')
             # self.gameWindow.chatRoom.chatFrame.getMessage(data[1], data[2])
-            eel.writeMessage(data[1], data[2])
+            eel.writeMessage(data[1], data[2].replace("\0",""))
             client_msg=cSocket.recv(BUF_SIZE)
 
 @eel.expose                         # Expose this function to Javascript
@@ -306,4 +306,4 @@ def sendMessage(text):
         cmd=f"message^^%id%^^{text}\0"
         cSocket.send(cmd.encode('utf-8'))
 
-eel.start('main.html', size=(1000, 700), port = random.randint(49152, 65535)) 
+eel.start('main.html', size=(1000, 700), port = 0) #random.randint(49152, 65535)

@@ -3,21 +3,77 @@
 
 <head>
     <title>Game</title>
-
-    <!-- Include eel.js - note this file doesn't exist in the 'web' directory -->
     <script type="text/javascript" src="/eel.js"></script>
-    <script type="text/javascript">
-
-        eel.expose(writeMessage);
-        function writeMessage(ip, text) {
-            console.log(ip, text);
-        }
-
-    </script>
+    <link rel="stylesheet" href="./css/init.css">
+    <link rel="stylesheet" href="./css/game.css">
 </head>
 
 <body>
-    Hello, World!
+    <div class="game_panel">
+        <canvas></canvas>
+    </div>
+    <div class="chatroom">
+        <div id="chatLine">
+            <!-- <div class="other chatLineGroup">
+                <div class="time">5:20</div>
+                <div class="msg">123456</div>
+            </div>
+            <div class="me chatLineGroup">
+                <div class="time">5:30</div>
+                <div class="msg">789456123</div>
+            </div>
+            <div class="me chatLineGroup">
+                <div class="time">5:30</div>
+                <div class="msg">
+                    789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123789456123
+                </div>
+            </div> -->
+        </div>
+        <div id="chatEntryGroup">
+            <input type="text" id="messageInput">
+            <button id="sendMessage_btn">></button>
+        </div>
+    </div>
+    <script>
+        const chatLine = document.getElementById('chatLine');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessage_btn = document.getElementById('sendMessage_btn');
+
+        eel.expose(writeMessage);
+        function createChatLine(type, msgValue) {
+            var now = new Date();
+            var chatLineGroup = document.createElement('div');
+            chatLineGroup.classList.add('chatLineGroup');
+            chatLineGroup.classList.add(type);
+            var time = document.createElement('div');
+            time.classList.add('time');
+            time.innerText = `${now.getHours()}:${now.getMinutes()}`;
+            var msg = document.createElement('div');
+            msg.classList.add('msg');
+            msg.innerText = msgValue;
+            chatLineGroup.appendChild(time);
+            chatLineGroup.appendChild(msg);
+            chatLine.appendChild(chatLineGroup);
+        }
+        function scrollToBottom() {
+            chatLine.scrollTo({
+                top: chatLine.scrollHeight,
+                behavior: "smooth"
+            });
+        }
+        function writeMessage(ip, text) {
+            console.log(ip, text);
+            createChatLine("other", text);
+            scrollToBottom();
+        }
+        function sendMessage() {
+            createChatLine("me", messageInput.value);
+            eel.sendMessage(messageInput.value);
+            messageInput.value = '';
+            scrollToBottom();
+        }
+        sendMessage_btn.addEventListener('click', sendMessage);
+    </script>
 </body>
 
 </html>
