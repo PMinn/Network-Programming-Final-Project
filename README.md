@@ -2,6 +2,7 @@
 
 ```
 pip install eel
+pip install pyautogui
 ```
 ---
 
