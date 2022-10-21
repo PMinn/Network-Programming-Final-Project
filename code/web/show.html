@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Game</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    <link rel="stylesheet" href="./css/init.css">
+</head>
+
+<body>
+    <img src="" alt="" id="img">
+    <script>
+        eel.expose(readImg);
+        function readImg(base64) {
+            console.log(base64);
+            document.getElementById('img').src = base64;
+        }
+    </script>
+</body>
+
+</html>
