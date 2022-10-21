@@ -5,6 +5,20 @@
     <title>Game</title>
     <script type="text/javascript" src="/eel.js"></script>
     <link rel="stylesheet" href="./css/init.css">
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body>img {
+            width: 100vw;
+        }
+    </style>
 </head>
 
 <body>
@@ -12,7 +26,6 @@
     <script>
         eel.expose(readImg);
         function readImg(base64) {
-            console.log(base64);
             document.getElementById('img').src = base64;
         }
     </script>
