@@ -47,5 +47,5 @@ class Thread(threading.Thread):
             splitedData = dataSplit((getScreenshotToBase64()+'@').encode('utf-8'))
             for data in splitedData:
                 UDPSocket.sendto(data, clientIp)
-            time.sleep(1)
+            time.sleep(0.3)
 Thread()
