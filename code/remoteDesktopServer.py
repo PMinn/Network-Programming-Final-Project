@@ -43,9 +43,12 @@ class Thread(threading.Thread):
         self.start()
     def run(self):
         client_msg, clientIp = UDPSocket.recvfrom(BUF_SIZE)
+        imgId = int(0)
         while 1:
-            splitedData = dataSplit((getScreenshotToBase64()+'@').encode('utf-8'))
+            splitedData = dataSplit(getScreenshotToBase64()+'@')
+            print(sys.getsizeof(splitedData))
             for data in splitedData:
-                UDPSocket.sendto(data, clientIp)
-            time.sleep(0.3)
+                UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), clientIp)
+            imgId += 1
+            time.sleep(0.1)
 Thread()
