@@ -49,6 +49,7 @@ class Thread(threading.Thread):
             print(sys.getsizeof(splitedData))
             for data in splitedData:
                 UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), clientIp)
+                time.sleep(0.013)
+                # 24fps == 0.04166667 -> 1frame split to 3 parts -> one part need to wait 0.01388889
             imgId += 1
-            time.sleep(0.1)
 Thread()
