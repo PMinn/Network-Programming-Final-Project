@@ -29,7 +29,7 @@ class Thread(threading.Thread):
                     imgId = newImgId
                     data = data_utf8[6:]
             if len(data) > 0 and data[-1] == '@':
-                print('show')
+                #print('show')
                 img = f'data:image/png;base64,{data[:-1]}'
                 eel.readImg(img)
 
