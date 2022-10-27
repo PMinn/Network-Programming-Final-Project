@@ -30,11 +30,13 @@ def dataSplit(data):
 def getScreenshotToBase64():
     img = pyautogui.screenshot() # PIL.Image.Image
     width, height = img.size
-    img = img.resize((width//2, height//2))
+    # print(str(width)+ " "+str(height))
+    # img = img.resize((width//2, height//2))
     output_buffer = BytesIO()
-    img.save(output_buffer, format='PNG')
+    img.save(output_buffer, format='webp')
     byte_data = output_buffer.getvalue()
     base64_str = str(base64.b64encode(byte_data))
+    print(sys.getsizeof(base64_str))
     return base64_str[2:-1]
 
 class Thread(threading.Thread):
@@ -46,10 +48,11 @@ class Thread(threading.Thread):
         imgId = int(0)
         while 1:
             splitedData = dataSplit(getScreenshotToBase64()+'@')
+            # data = getScreenshotToBase64()+'@'
             print(sys.getsizeof(splitedData))
             for data in splitedData:
                 UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), clientIp)
-                time.sleep(0.013)
-                # 24fps == 0.04166667 -> 1frame split to 3 parts -> one part need to wait 0.01388889
+                time.sleep(0.04166667/len(splitedData))
+                # 24fps == 0.04166667
             imgId += 1
 Thread()

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Game</title>
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+
+<body>
+    <script>
+        window.onload = init;
+        var context;    // Audio context
+        var buf;        // Audio buffer
+
+        eel.expose(getAudio);
+        function getAudio(data) {
+            // console.log(data)
+            _base64ToArrayBuffer(data)
+                .then(arrayBuffer => {
+                    playByteArray(arrayBuffer)
+                })
+            // base64ToBufferAsync(data)
+            //     .then(response => {
+            //         console.log(response)
+            //         playByteArray(response)
+            //     })
+        }
+
+        function _base64ToArrayBuffer(base64) {
+            return new Promise((rosolve, reject) => {
+                var binary_string = window.atob(base64);
+                var len = binary_string.length;
+                var bytes = new Uint8Array(len);
+                for (var i = 0; i < len; i++) {
+                    bytes[i] = binary_string.charCodeAt(i);
+                }
+                return rosolve(bytes.buffer);
+            })
+        }
+
+        function base64ToBufferAsync(base64) {
+            return fetch("data:application/octet-binary;base64," + base64)
+                .then(res => res.arrayBuffer())
+                .then(buffer => new Uint8Array(buffer))
+        }
+
+        function init() {
+            if (!window.AudioContext) {
+                if (!window.webkitAudioContext) {
+                    alert("Your browser does not support any AudioContext and cannot play back this audio.");
+                    return;
+                }
+                window.AudioContext = window.webkitAudioContext;
+            }
+
+            context = new AudioContext();
+        }
+
+        function playByteArray(byteArray) {//
+            // var arrayBuffer = new ArrayBuffer(byteArray.length);
+            // var bufferView = new Uint8Array(arrayBuffer);
+            // for (i = 0; i < byteArray.length; i++) {
+            //     bufferView[i] = byteArray[i];
+            // }
+
+            context.decodeAudioData(byteArray, function (buffer) {
+                buf = buffer;
+                play();
+            });
+        }
+
+        // Play the loaded file
+        function play() {
+            // Create a source node from the buffer
+            var source = context.createBufferSource();
+            source.buffer = buf;
+            // Connect to the final output node (the speakers)
+            source.connect(context.destination);
+            // Play immediately
+            source.start(0);
+        }
+    </script>
+</body>
+
+</html>
