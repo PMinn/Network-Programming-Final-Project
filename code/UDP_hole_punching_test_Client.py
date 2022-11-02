@@ -19,16 +19,17 @@ def threaded_function(rip):
 UDPSock.sendto(data.encode('utf-8'),addr)
 #接收伺服器回傳的另一台主機IP:PORT
 dest, adr = UDPSock.recvfrom(1024)
-dest = dest.decode('utf-8')
-print(f"send ping to {dest}")
-dest = dest.split(':')
-rip = (dest[0], int(dest[1]))
-#進行打洞
-UDPSock.sendto('ping'.encode('utf-8'), rip)
-thread = Thread(target = threaded_function, args = (rip, ))
-thread.start()
+dest = dest.decode('utf-8').split(',')
+if(dest[0] == 'connect'):
+    print(f"send ping to {dest[1]}")
+    dest = dest[1].split(':')
+    rip = (dest[0], int(dest[1]))
+    #進行打洞
+    UDPSock.sendto('ping,'.encode('utf-8'), rip)
+    thread = Thread(target = threaded_function, args = (rip, ))
+    thread.start()
 
 #持續接收封包
 while True:
-    data,adr = UDPSock.recvfrom(1024)
-    print('Recv' , data.decode('utf-8') , 'from' ,adr)
+    data, adr = UDPSock.recvfrom(1024)
+    print(f'Recv {data.decode("utf-8")} from {adr}')
