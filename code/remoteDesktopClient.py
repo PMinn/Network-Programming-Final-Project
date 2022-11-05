@@ -3,6 +3,8 @@ import threading
 #ver web
 import eel
 
+print(socket.gethostname())
+
 BUF_SIZE = 65000
 
 eel.init('web', allowed_extensions=['.js', '.html'])
