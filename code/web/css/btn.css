@@ -1,0 +1,23 @@
+a:has(>*.btn) {
+    display: inline-block;
+}
+
+.btn {
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 36px;
+    height: 36px;
+    color: #4285f4;
+    background-color: transparent;
+    border: 1px solid #424242;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background-color 0.25s;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #64b5f63d;
+}
