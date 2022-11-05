@@ -104,14 +104,14 @@
     </div>
     <script>
         const name = document.getElementById('name');
+
         async function gethostname() {
-            let n = await eel.gethostname()()
-            return n;
+            return await eel.gethostname()();
         }
+
         gethostname()
             .then(hostname => {
                 name.value = hostname;
-                console.log(hostname)
             })
     </script>
 </body>
