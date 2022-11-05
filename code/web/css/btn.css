@@ -8,7 +8,7 @@ a:has(>*.btn) {
     font-weight: 500;
     line-height: 36px;
     height: 36px;
-    color: #4285f4;
+    color: #ff8906;
     background-color: transparent;
     border: 1px solid #424242;
     cursor: pointer;
@@ -19,5 +19,5 @@ a:has(>*.btn) {
 }
 
 .btn:hover {
-    background-color: #64b5f63d;
+    background-color: #ffaa483b;
 }
