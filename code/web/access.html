@@ -59,7 +59,7 @@
     <nav>
         <div class="logo">遠端桌面控制</div>
     </nav>
-    <div class="page">
+    <div class="page" id="page">
         <div class="computer">
             <div class="icon">
                 <img src="./media/monitor.png" alt="">
@@ -71,6 +71,33 @@
         </div>
     </div>
     <script>
+        const page = document.getElementById('page');
+        async function getSupporter() {
+            return await eel.getSupporter()();
+        }
+
+        getSupporter()
+            .then(supporters => {
+                supporters = JSON.parse(supporters);
+                supporters.forEach(supporter => {
+                    var computer = document.createElement('div');
+                    computer.classList.add('computer');
+                    var lastCheckTime = new Date(parseFloat(supporter.lastCheckTime) * 1000);
+                    var checkTimeLable = "線上";
+                    if (new Date() - lastCheckTime > 120000) checkTimeLable = lastCheckTime.toLocaleString();
+                    computer.innerHTML = `
+                    <div class="icon">
+                        <img src="./media/monitor.png" alt="">
+                    </div>
+                    <div class="info">
+                        <div class="name">${supporter.hostname}</div>
+                        <div>${checkTimeLable}</div>
+                    </div>
+                    `;
+                    page.appendChild(computer);
+                });
+                console.log(supporters)
+            })
     </script>
 </body>
 

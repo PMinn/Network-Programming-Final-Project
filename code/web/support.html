@@ -55,7 +55,7 @@
             font-size: 24pt;
         }
 
-        #name {
+        #hostname {
             border-top: 0;
             border-left: 0;
             border-right: 0;
@@ -80,6 +80,9 @@
             color: #fffffe;
             border: 0;
         }
+        #next:disabled{
+            background-color: #75440c;
+        }
     </style>
 </head>
 
@@ -95,24 +98,32 @@
             <div class="info">
                 <div class="choseName">選擇名稱</div>
                 <div>請輸入電腦名稱。</div>
-                <input type="text" id="name">
+                <input type="text" id="hostname">
                 <div class="button-group">
-                    <div class="btn" id="next">繼續</div>
+                    <button class="btn" id="next">繼續</button>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        const name = document.getElementById('name');
+        const hostname = document.getElementById('hostname');
+        const nextBtn = document.getElementById('next');
 
         async function gethostname() {
             return await eel.gethostname()();
         }
 
         gethostname()
-            .then(hostname => {
-                name.value = hostname;
+            .then(name => {
+                console.log(name)
+                hostname.value = name;
             })
+
+        nextBtn.addEventListener('click', () => {
+            console.log('nextBtn click')
+            eel.signSupporter(hostname.value);
+            nextBtn.disabled = true;
+        })
     </script>
 </body>
 
