@@ -11,11 +11,16 @@ eel.init('web', allowed_extensions=['.js', '.html'])
 
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 TCPSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+try:
+    TCPSocket.connect((serverIP, PORT))
+except Exception as msg:
+    print("err:"+str(msg))
 
 @eel.expose
 def gethostname():
     return socket.gethostname()
 
+''' supporter '''
 def sendCheckTime():
     while True:
         time.sleep(60)
@@ -23,22 +28,14 @@ def sendCheckTime():
 
 @eel.expose
 def signSupporter(hostname):
-    print("signSupporter")
-    try:
-        TCPSocket.connect((serverIP, PORT))
-    except Exception as msg:
-        print("err:"+str(msg))
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
     t = threading.Thread(target=sendCheckTime)
     t.start()
 
+
+''' access '''
 @eel.expose
 def getSupporter():
-    print("getSupporter")
-    try:
-        TCPSocket.connect((serverIP, PORT))
-    except Exception as msg:
-        print("err:"+str(msg))
     TCPSocket.send("getSupporter".encode('utf-8'))
     msg = TCPSocket.recv(BUF_SIZE)
     msg_utf8 = msg.decode('utf-8')

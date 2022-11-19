@@ -38,8 +38,7 @@ try:
         clientSocket, rAddress = TCPSocket.accept()
         print(str(rAddress[0])+" : "+str(rAddress[1]))
         try:
-            t = threading.Thread(target=createThread,args=(clientSocket, rAddress))
-            t.start()
+            threading.Thread(target=createThread,args=(clientSocket, rAddress)).start()
         except socket.error as msg:
             print("socket error:"+str(msg))
 except KeyboardInterrupt:
