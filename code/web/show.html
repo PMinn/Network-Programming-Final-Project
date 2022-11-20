@@ -24,6 +24,11 @@
 <body>
     <img src="" alt="" id="img">
     <script>
+        var uuid = location.search.replace('?uid=', '');
+        if (uuid != '') {
+            eel.connect2Supporter(uuid);
+        }
+
         eel.expose(readImg);
         function readImg(base64) {
             document.getElementById('img').src = base64;

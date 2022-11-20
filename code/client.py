@@ -2,8 +2,13 @@ import eel
 import socket
 import time
 import threading
+import sys
+import pyautogui
+import base64
+from io import BytesIO
 
-PORT = 6666
+TCP_PORT = 6666
+UDP_PORT = 8888
 BUF_SIZE = 1024
 serverIP = "127.0.0.1"
 
@@ -11,8 +16,12 @@ eel.init('web', allowed_extensions=['.js', '.html'])
 
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 TCPSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 try:
-    TCPSocket.connect((serverIP, PORT))
+    TCPSocket.connect((serverIP, TCP_PORT))
+    msg = TCPSocket.recv(BUF_SIZE)
+    UDPSocket.sendto(msg, (serverIP, UDP_PORT))
 except Exception as msg:
     print("err:"+str(msg))
 
@@ -26,13 +35,46 @@ def sendCheckTime():
         time.sleep(60)
         TCPSocket.send("checkTime".encode('utf-8'))
 
+def dataSplit(data):
+    result = []
+    n = 60000
+    for idx in range(0, len(data), n):
+        result.append(data[idx : idx + n])
+    return result
+
+def getScreenshotToBase64():
+    img = pyautogui.screenshot() # PIL.Image.Image
+    width, height = img.size
+    # print(str(width)+ " "+str(height))
+    # img = img.resize((width//2, height//2))
+    output_buffer = BytesIO()
+    img.save(output_buffer, format='webp')
+    byte_data = output_buffer.getvalue()
+    base64_str = str(base64.b64encode(byte_data))
+    print(sys.getsizeof(base64_str))
+    return base64_str[2:-1]
+
 @eel.expose
 def signSupporter(hostname):
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
     t = threading.Thread(target=sendCheckTime)
     t.start()
-
-
+    msg = TCPSocket.recv(BUF_SIZE)
+    data = msg.decode('utf-8').split(',')
+    if data[0] == 'connect2Supporter':
+        address = data[1].split(':')
+        address = (address[0],int(address[1]))
+        imgId = int(0)
+        while 1:
+            splitedData = dataSplit(getScreenshotToBase64()+'@')
+            # data = getScreenshotToBase64()+'@'
+            print(sys.getsizeof(splitedData))
+            for data in splitedData:
+                UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
+                time.sleep(0.04166667/len(splitedData))
+                # 24fps == 0.04166667
+            imgId += 1
+    
 ''' access '''
 @eel.expose
 def getSupporter():
@@ -40,6 +82,10 @@ def getSupporter():
     msg = TCPSocket.recv(BUF_SIZE)
     msg_utf8 = msg.decode('utf-8')
     return msg_utf8
+
+@eel.expose
+def connect2Supporter(uid):
+    TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
 
 eel.start('index.html', size=(1000, 1000), port=0)  # Start
 TCPSocket.close()

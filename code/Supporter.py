@@ -1,23 +1,12 @@
-import time
 from Device import Device
 
 class Supporter(Device):
-    def __init__(self, socket, address):
-        super().__init__(socket, address)
-        self.hostname = ""
-        self.lastCheckTime = time.time()
-
-    def setHostname(self, hostname):
+    def __init__(self, device, hostname):
+        super().__init__(device.TCPsocket, device.TCPaddress, device.uid)
         self.hostname = hostname
 
-    def checkTime(self):
-        self.lastCheckTime = time.time()
-
     def __str__(self):
-        return f"{str(self.hostname)},{str(self.address[0])},{str(self.address[1])},{str(self.lastCheckTime)}"
-
-    def toJSON(self):
         json = "{"
-        json += f'"hostname":"{str(self.hostname)}","ip":"{str(self.address[0])}","port":{str(self.address[1])},"lastCheckTime":{str(self.lastCheckTime)}'
+        json += f'"hostname":"{str(self.hostname)}","ip":"{str(self.TCPaddress[0])}","port":{str(self.TCPaddress[1])},"lastCheckTime":{str(self.lastCheckTime)},"uid":"{str(self.uid)}"'
         json += "}"
         return json

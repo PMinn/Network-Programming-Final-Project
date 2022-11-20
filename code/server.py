@@ -1,44 +1,71 @@
 import socket
 import threading
 from Supporter import Supporter
-from SupportersList import SupportersList
+from Device import Device
+from DevicesList import DevicesList
 
-PORT = 6666
+
+TCP_PORT = 6666
+UDP_PORT = 8888
 backlog = 5
 BUF_SIZE = 1024	
 
-supporters = SupportersList()
+supporters = DevicesList()
+devices = DevicesList()
 
 TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 TCPSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-TCPSocket.bind(('', PORT))
+TCPSocket.bind(('', TCP_PORT))
 TCPSocket.listen(backlog)
+UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+UDPSocket.bind(('', UDP_PORT))
 
-
-def createThread(clientSocket, rAddress):
-    supporter = Supporter(clientSocket, rAddress)
+def mainThread(clientSocket, rAddress):
+    device = Device(clientSocket, rAddress)
+    print('register',device.uid)
+    devices.append(device)
+    clientSocket.send(str(device.uid).encode('utf-8'))
     client_msg = clientSocket.recv(BUF_SIZE)
     while client_msg:
         client_utf8 = client_msg.decode('utf-8')
-        print(client_utf8)
         data = client_utf8.split(',')
         if data[0] == 'signSupporter':
-            supporter.setHostname(data[1])
-            supporters.append(supporter)
-            print(supporter)
+            device = Supporter(device, data[1])
+            supporters.append(device)
+            print(device)
         elif data[0] == 'checkTime':
-            supporter.checkTime()
+            device.checkTime()
         elif data[0] == 'getSupporter':
-            clientSocket.send(supporters.toJSON().encode('utf-8'))
+            clientSocket.send(str(supporters).encode('utf-8'))
+        elif data[0] == 'connect2Supporter':
+            targetSupporter = supporters.find(data[1])
+            print(device)
+            print(device.UDPaddress)
+            ad = f'{device.UDPaddress[0]}:{device.UDPaddress[1]}'
+            targetSupporter.TCPsocket.send(f'connect2Supporter,{ad}'.encode('utf-8'))
         client_msg = clientSocket.recv(BUF_SIZE)
         # clientSocket.close()
+
+def UDPThread():
+    while 1:
+        try:
+            UDPSocket.settimeout(5)
+            data, address = UDPSocket.recvfrom(BUF_SIZE)
+            targetUID = data.decode('utf-8')
+            print(targetUID)
+            targetDevices = devices.find(targetUID)
+            if targetDevices != None:
+                targetDevices.setUDP(address)
+        except:
+            pass
 
 try:
     while True:
         clientSocket, rAddress = TCPSocket.accept()
         print(str(rAddress[0])+" : "+str(rAddress[1]))
         try:
-            threading.Thread(target=createThread,args=(clientSocket, rAddress)).start()
+            threading.Thread(target=mainThread,args=(clientSocket, rAddress)).start()
+            threading.Thread(target=UDPThread).start()
         except socket.error as msg:
             print("socket error:"+str(msg))
 except KeyboardInterrupt:
