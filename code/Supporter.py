@@ -3,6 +3,7 @@ from Device import Device
 class Supporter(Device):
     def __init__(self, device, hostname):
         super().__init__(device.TCPsocket, device.TCPaddress, device.uid)
+        super().setUDP(device.UDPaddress)
         self.hostname = hostname
 
     def __str__(self):

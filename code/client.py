@@ -85,7 +85,26 @@ def getSupporter():
 
 @eel.expose
 def connect2Supporter(uid):
+    global BUF_SIZE
+    BUF_SIZE = 65000
     TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
+    while 1:
+        data = ""
+        imgId = 0
+        while len(data) == 0 or data[-1] != '@':
+            server_reply, reServerIp = UDPSocket.recvfrom(BUF_SIZE)
+            data_utf8 = server_reply.decode("utf-8")
+            newImgId = int(data_utf8[0:6])
+            print(newImgId)
+            if newImgId == imgId:
+                data += data_utf8[6:]
+            elif newImgId > imgId:
+                imgId = newImgId
+                data = data_utf8[6:]
+        if len(data) > 0 and data[-1] == '@':
+            #print('show')
+            img = f'data:image/png;base64,{data[:-1]}'
+            eel.readImg(img)
 
 eel.start('index.html', size=(1000, 1000), port=0)  # Start
 TCPSocket.close()

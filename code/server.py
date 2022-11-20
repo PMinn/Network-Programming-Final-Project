@@ -39,10 +39,7 @@ def mainThread(clientSocket, rAddress):
             clientSocket.send(str(supporters).encode('utf-8'))
         elif data[0] == 'connect2Supporter':
             targetSupporter = supporters.find(data[1])
-            print(device)
-            print(device.UDPaddress)
-            ad = f'{device.UDPaddress[0]}:{device.UDPaddress[1]}'
-            targetSupporter.TCPsocket.send(f'connect2Supporter,{ad}'.encode('utf-8'))
+            targetSupporter.TCPsocket.send(f'connect2Supporter,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
         client_msg = clientSocket.recv(BUF_SIZE)
         # clientSocket.close()
 

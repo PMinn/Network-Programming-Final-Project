@@ -16,7 +16,7 @@ class Device():
         self.uid = uid
 
     def setUDP(self, UDPaddress):
-        self.UDPaddress = TCPaddress
+        self.UDPaddress = UDPaddress
 
     def checkTime(self):
         self.lastCheckTime = time.time()
