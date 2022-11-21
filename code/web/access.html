@@ -30,6 +30,7 @@
             padding: 40px;
             background-color: #fffffe;
             color: #000;
+            text-decoration: none;
         }
 
         .icon {
@@ -79,13 +80,13 @@
                 .then(supporters => {
                     supporters = JSON.parse(supporters);
                     supporters.forEach(supporter => {
-                        var computer = document.createElement('div');
+                        var computer = document.createElement('a');
+                        computer.href = `./show.html?uid=${supporter.uid}`;
                         computer.classList.add('computer');
                         var lastCheckTime = new Date(parseFloat(supporter.lastCheckTime) * 1000);
                         var checkTimeLable = "線上";
                         if (new Date() - lastCheckTime > 120000) checkTimeLable = lastCheckTime.toLocaleString();
                         computer.innerHTML = `
-                        <a href="./show.html?uid=${supporter.uid}">
                             <div class="icon">
                                 <img src="./media/monitor.png" alt="">
                             </div>
@@ -93,7 +94,6 @@
                                 <div class="name">${supporter.hostname}</div>
                                 <div>${checkTimeLable}</div>
                             </div>
-                        </a>
                     `;
                         page.appendChild(computer);
                     });
