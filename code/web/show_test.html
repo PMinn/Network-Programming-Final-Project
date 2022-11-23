@@ -1,0 +1,95 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+        }
+
+        #outer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="outer">
+        <img src="https://picsum.photos/1920/1080" alt="" draggable="false">
+    </div>
+    <script>
+        const img = document.querySelector('img');
+        const supportWidth = 1920;
+        const supportHeight = 1080;
+        const supportRatio = supportWidth / supportHeight;
+        var lastDblickPositionX = 0, lastDblickPositionY = 0;
+        var keyborEvent = {
+            shift: false,
+            ctr: false,
+            alt: false
+        }
+        function checkImgSize() {
+            if (window.innerWidth / window.innerHeight > supportRatio) {
+                img.style.height = '100%';
+                img.style.width = 'auto';
+            } else {
+                img.style.height = 'auto';
+                img.style.width = '100%';
+            }
+        }
+
+        window.addEventListener('resize', checkImgSize, true);
+        checkImgSize();
+        /*
+                img.addEventListener('mousemove', e => {
+                    console.log(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
+                })
+        
+                img.addEventListener('click', e => {
+                    var clickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
+                    var clickPositionY = Math.floor(e.offsetY * supportHeight / img.height);
+                    // setTimeout(() => {
+                    //     if (clickPositionX != lastDblickPositionX || clickPositionY != lastDblickPositionY)
+                    console.log('click', clickPositionX, clickPositionY);
+                    // }, 300)
+                });
+        */
+        // img.addEventListener('dblclick', e => {
+        //     lastDblickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
+        //     lastDblickPositionY = Math.floor(e.offsetY * supportHeight / img.height)
+        //     console.log('dblclick', lastDblickPositionX, lastDblickPositionY);
+        // });
+        document.addEventListener("keydown", e => {
+            console.log('keydown', event)
+            keyborEvent.shift = e.shiftKey;
+            keyborEvent.ctr = e.ctrlKey;
+            keyborEvent.alt = e.altKey;
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+        document.addEventListener("keypress", e => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+        document.addEventListener("keyup", e => {
+            console.log('keyup', e)
+            keyborEvent.shift = e.shiftKey;
+            keyborEvent.ctr = e.ctrlKey;
+            keyborEvent.alt = e.altKey;
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    </script>
+</body>
+
+</html>
