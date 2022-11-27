@@ -5,7 +5,7 @@ class DevicesList(list):
                 return device
         return None
 
-    def remove(self, targetDevice):
+    def removeDevice(self, targetDevice):
         for device in self:
             if device.uid == targetDevice.uid:
                 self.remove(device)

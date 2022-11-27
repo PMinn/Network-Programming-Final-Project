@@ -47,6 +47,7 @@
         checkImgSize();
 
         img.addEventListener('mousemove', e => {
+            console.log(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
             eel.mousemove(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
         })
 

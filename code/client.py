@@ -85,11 +85,7 @@ def getSupporter():
     msg_utf8 = msg.decode('utf-8')
     return msg_utf8
 
-@eel.expose
-def connect2Supporter(uid):
-    global BUF_SIZE, reServerAddress
-    BUF_SIZE = 65000
-    TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
+def getImageThread():
     while 1:
         data = ""
         imgId = 0
@@ -105,6 +101,13 @@ def connect2Supporter(uid):
         if len(data) > 0 and data[-1] == '@':
             img = f'data:image/png;base64,{data[:-1]}'
             eel.readImg(img)
+
+@eel.expose
+def connect2Supporter(uid):
+    global BUF_SIZE, reServerAddress
+    BUF_SIZE = 65000
+    TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
+    threading.Thread(target=getImageThread).start()
 
 @eel.expose
 def mousemove(x,y):

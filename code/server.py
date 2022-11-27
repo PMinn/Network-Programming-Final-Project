@@ -50,8 +50,8 @@ def mainThread(clientSocket, rAddress):
         try:
             client_msg = clientSocket.recv(BUF_SIZE)
         except:
-            supporters.remove(device)
-            devices.remove(device)
+            supporters.removeDevice(device)
+            devices.removeDevice(device)
             print(f"device ({device.uid}) offline")
             clientSocket.close()
             break
