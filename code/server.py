@@ -3,7 +3,7 @@ import threading
 from Supporter import Supporter
 from Device import Device
 from DevicesList import DevicesList
-
+import time
 
 TCP_PORT = 6666
 UDP_PORT = 8888
@@ -21,10 +21,17 @@ UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 UDPSocket.bind(('', UDP_PORT))
 
 def mainThread(clientSocket, rAddress):
+    # init
     device = Device(clientSocket, rAddress)
     print('register',device.uid)
     devices.append(device)
     clientSocket.send(str(device.uid).encode('utf-8'))
+    time.sleep(0.5)
+    while device.UDPaddress == None:
+        clientSocket.send("E".encode('utf-8'))
+        time.sleep(1)
+    clientSocket.send("A".encode('utf-8'))
+    # end init
     client_msg = clientSocket.recv(BUF_SIZE)
     while client_msg:
         client_utf8 = client_msg.decode('utf-8')
@@ -40,8 +47,14 @@ def mainThread(clientSocket, rAddress):
         elif data[0] == 'connect2Supporter':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send(f'connect2Supporter,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
-        client_msg = clientSocket.recv(BUF_SIZE)
-        # clientSocket.close()
+        try:
+            client_msg = clientSocket.recv(BUF_SIZE)
+        except:
+            supporters.remove(device)
+            devices.remove(device)
+            print(f"device ({device.uid}) offline")
+            clientSocket.close()
+            break
 
 def UDPThread():
     while 1:

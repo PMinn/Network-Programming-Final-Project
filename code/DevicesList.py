@@ -1,10 +1,16 @@
 class DevicesList(list):
     def find(self, uid):
         for device in self:
-            print(device.uid, ' == ', uid , ' ', device.uid == uid)
             if device.uid == uid:
                 return device
         return None
+
+    def remove(self, targetDevice):
+        for device in self:
+            if device.uid == targetDevice.uid:
+                self.remove(device)
+                return True
+        return False
 
     def __str__(self):
         json = '['

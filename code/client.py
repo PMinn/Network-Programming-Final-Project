@@ -11,6 +11,7 @@ TCP_PORT = 6666
 UDP_PORT = 8888
 BUF_SIZE = 1024
 serverIP = "127.0.0.1"
+reServerAddress = None
 
 eel.init('web', allowed_extensions=['.js', '.html'])
 
@@ -20,8 +21,12 @@ UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 try:
     TCPSocket.connect((serverIP, TCP_PORT))
-    msg = TCPSocket.recv(BUF_SIZE)
-    UDPSocket.sendto(msg, (serverIP, UDP_PORT))
+    uidCode = TCPSocket.recv(BUF_SIZE)
+    UDPSocket.sendto(uidCode, (serverIP, UDP_PORT))
+    msg = TCPSocket.recv(BUF_SIZE).decode('utf-8')
+    while msg != 'A':
+        UDPSocket.sendto(uidCode, (serverIP, UDP_PORT))
+        msg = TCPSocket.recv(BUF_SIZE).decode('utf-8')
 except Exception as msg:
     print("err:"+str(msg))
 
@@ -45,13 +50,11 @@ def dataSplit(data):
 def getScreenshotToBase64():
     img = pyautogui.screenshot() # PIL.Image.Image
     width, height = img.size
-    # print(str(width)+ " "+str(height))
     # img = img.resize((width//2, height//2))
     output_buffer = BytesIO()
     img.save(output_buffer, format='webp')
     byte_data = output_buffer.getvalue()
     base64_str = str(base64.b64encode(byte_data))
-    print(sys.getsizeof(base64_str))
     return base64_str[2:-1]
 
 @eel.expose
@@ -68,7 +71,6 @@ def signSupporter(hostname):
         while 1:
             splitedData = dataSplit(getScreenshotToBase64()+'@')
             # data = getScreenshotToBase64()+'@'
-            print(sys.getsizeof(splitedData))
             for data in splitedData:
                 UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
                 time.sleep(0.04166667/len(splitedData))
@@ -85,26 +87,28 @@ def getSupporter():
 
 @eel.expose
 def connect2Supporter(uid):
-    global BUF_SIZE
+    global BUF_SIZE, reServerAddress
     BUF_SIZE = 65000
     TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
     while 1:
         data = ""
         imgId = 0
         while len(data) == 0 or data[-1] != '@':
-            server_reply, reServerIp = UDPSocket.recvfrom(BUF_SIZE)
+            server_reply, reServerAddress = UDPSocket.recvfrom(BUF_SIZE)
             data_utf8 = server_reply.decode("utf-8")
             newImgId = int(data_utf8[0:6])
-            print(newImgId)
             if newImgId == imgId:
                 data += data_utf8[6:]
             elif newImgId > imgId:
                 imgId = newImgId
                 data = data_utf8[6:]
         if len(data) > 0 and data[-1] == '@':
-            #print('show')
             img = f'data:image/png;base64,{data[:-1]}'
             eel.readImg(img)
+
+@eel.expose
+def mousemove(x,y):
+    print(x,y)
 
 eel.start('index.html', size=(1000, 1000), port=0)  # Start
 TCPSocket.close()

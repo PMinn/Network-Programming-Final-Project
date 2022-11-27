@@ -1,29 +1,90 @@
-<!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Game</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遠端存取 - 遠端桌面控制</title>
     <script type="text/javascript" src="/eel.js"></script>
     <link rel="stylesheet" href="./css/init.css">
     <style>
-        body {
+        #outer {
             width: 100vw;
             height: 100vh;
-            background-color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        body>img {
-            width: 80vw;
         }
     </style>
 </head>
 
 <body>
-    <img src="" alt="" id="img">
+    <div id="outer">
+        <img draggable="false" id="img">
+    </div>
     <script>
+        const img = document.getElementById('img');
+        const supportWidth = 1920;
+        const supportHeight = 1080;
+        const supportRatio = supportWidth / supportHeight;
+        var lastDblickPositionX = 0, lastDblickPositionY = 0;
+        var keyborEvent = {
+            shift: false,
+            ctr: false,
+            alt: false
+        }
+        function checkImgSize() {
+            if (window.innerWidth / window.innerHeight > supportRatio) {
+                img.style.height = '100%';
+                img.style.width = 'auto';
+            } else {
+                img.style.height = 'auto';
+                img.style.width = '100%';
+            }
+        }
+
+        window.addEventListener('resize', checkImgSize, true);
+        checkImgSize();
+
+        img.addEventListener('mousemove', e => {
+            eel.mousemove(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
+        })
+
+        img.addEventListener('click', e => {
+            var clickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
+            var clickPositionY = Math.floor(e.offsetY * supportHeight / img.height);
+            // setTimeout(() => {
+            //     if (clickPositionX != lastDblickPositionX || clickPositionY != lastDblickPositionY)
+            console.log('click', clickPositionX, clickPositionY);
+            // }, 300)
+        });
+
+        // img.addEventListener('dblclick', e => {
+        //     lastDblickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
+        //     lastDblickPositionY = Math.floor(e.offsetY * supportHeight / img.height)
+        //     console.log('dblclick', lastDblickPositionX, lastDblickPositionY);
+        // });
+        document.addEventListener("keydown", e => {
+            console.log('keydown', event)
+            keyborEvent.shift = e.shiftKey;
+            keyborEvent.ctr = e.ctrlKey;
+            keyborEvent.alt = e.altKey;
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+        document.addEventListener("keypress", e => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+        document.addEventListener("keyup", e => {
+            console.log('keyup', e)
+            keyborEvent.shift = e.shiftKey;
+            keyborEvent.ctr = e.ctrlKey;
+            keyborEvent.alt = e.altKey;
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+
         var uuid = location.search.replace('?uid=', '');
         if (uuid != '') {
             eel.connect2Supporter(uuid);
@@ -31,7 +92,7 @@
 
         eel.expose(readImg);
         function readImg(base64) {
-            document.getElementById('img').src = base64;
+            img.src = base64;
         }
     </script>
 </body>
