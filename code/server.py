@@ -46,11 +46,18 @@ def mainThread(clientSocket, rAddress):
             clientSocket.send(str(supporters).encode('utf-8'))
         elif data[0] == 'connect2Supporter':
             targetSupporter = supporters.find(data[1])
+            clientSocket.send(f"{targetSupporter.UDPaddress[0]}:{targetSupporter.UDPaddress[1]}".encode('utf-8'))
             targetSupporter.TCPsocket.send(f'connect2Supporter,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
             targetSupporter.isRuning = True
-        elif data[0] == 'closeShow':
+        elif data[0] == 'disconnection':
             targetSupporter = supporters.find(data[1])
-            targetSupporter.TCPsocket.send('closeShow'.encode('utf-8'))
+            targetSupporter.TCPsocket.send('disconnection'.encode('utf-8'))
+            targetSupporter.isRuning = False
+        elif data[0] == 'disconnection':
+            targetSupporter = supporters.find(data[1])
+            targetSupporter.TCPsocket.send('disconnection'.encode('utf-8'))
+            targetSupporter.isRuning = False
+
         try:
             client_msg = clientSocket.recv(BUF_SIZE)
         except:

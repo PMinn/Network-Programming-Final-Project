@@ -59,13 +59,24 @@ def getScreenshotToBase64():
     base64_str = str(base64.b64encode(byte_data))
     return base64_str[2:-1]
 
-def checkClose():
-    global isSending
-    msg = TCPSocket.recv(BUF_SIZE)
-    data = msg.decode('utf-8')
-    if data=="closeShow":
-        isSending = False
-        print("closeShow")
+def checkControl():
+    while 1:
+        data, address = UDPSocket.recvfrom(BUF_SIZE)
+        data = data.decode("utf-8").split(",")
+        if data[0]=='mm':
+            position = data[1].split("@")
+            pyautogui.moveTo(int(position[0]), int(position[1])) 
+
+def sending(address):
+    imgId = int(0)
+    while isSending:
+        splitedData = dataSplit(getScreenshotToBase64()+'@')
+        # data = getScreenshotToBase64()+'@'
+        for data in splitedData:
+            UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
+            time.sleep(0.04166667/len(splitedData))
+            # 24fps == 0.04166667
+        imgId += 1
 
 @eel.expose
 def signSupporter(hostname):
@@ -73,25 +84,24 @@ def signSupporter(hostname):
     print("signSupporter")
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
     threading.Thread(target=sendCheckTime).start()
-    msg = TCPSocket.recv(BUF_SIZE)
-    data = msg.decode('utf-8').split(',')
-    if data[0] == 'connect2Supporter':
-        isSending = True
-        address = data[1].split(':')
-        address = (address[0],int(address[1]))
-        imgId = int(0)
-        threading.Thread(target=checkClose).start()
-        while isSending:
-            splitedData = dataSplit(getScreenshotToBase64()+'@')
-            # data = getScreenshotToBase64()+'@'
-            for data in splitedData:
-                UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
-                time.sleep(0.04166667/len(splitedData))
-                # 24fps == 0.04166667
-            imgId += 1
+    while 1:
+        msg = TCPSocket.recv(BUF_SIZE)
+        data = msg.decode('utf-8').split(',')
+        if data[0] == 'connect2Supporter':
+            isSending = True
+            address = data[1].split(':')
+            address = (address[0],int(address[1]))
+            threading.Thread(target=checkControl).start()
+            threading.Thread(target=sending, args=(address,)).start()
+        elif data[0] == "disconnection":
+            isSending = False
+            print("disconnection")
+''' end supporter '''
 
 ''' access '''
 targetUid = None
+isRecving = False
+
 @eel.expose
 def getSupporter():
     TCPSocket.send("getSupporter".encode('utf-8'))
@@ -100,39 +110,58 @@ def getSupporter():
     return msg_utf8
 
 def getImageThread():
-    while 1:
+    UDPSocket.setblocking(False)
+    while isRecving:
         data = ""
         imgId = 0
-        while len(data) == 0 or data[-1] != '@':
-            server_reply, reServerAddress = UDPSocket.recvfrom(BUF_SIZE)
-            data_utf8 = server_reply.decode("utf-8")
-            newImgId = int(data_utf8[0:6])
-            if newImgId == imgId:
-                data += data_utf8[6:]
-            elif newImgId > imgId:
-                imgId = newImgId
-                data = data_utf8[6:]
+        while len(data) == 0 or data[-1] != '@' and isRecving:
+            try:
+                server_reply, reServerAddress = UDPSocket.recvfrom(BUF_SIZE)
+            except:
+                pass
+            else:
+                data_utf8 = server_reply.decode("utf-8")
+                newImgId = int(data_utf8[0:6])
+                if newImgId == imgId:
+                    data += data_utf8[6:]
+                elif newImgId > imgId:
+                    imgId = newImgId
+                    data = data_utf8[6:]
         if len(data) > 0 and data[-1] == '@':
             img = f'data:image/png;base64,{data[:-1]}'
             eel.readImg(img)
+    UDPSocket.setblocking(True)
 
 @eel.expose
 def connect2Supporter(uid):
-    global BUF_SIZE, reServerAddress, imageThread, targetUid
+    global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving
+    isRecving = True
     targetUid = uid
-    BUF_SIZE = 65000
     TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
+    msg = TCPSocket.recv(BUF_SIZE)
+    addr = msg.decode('utf-8').split(':')
+    reServerAddress = (addr[0],int(addr[1]))
+    BUF_SIZE = 65000
     imageThread = threading.Thread(target=getImageThread)
     imageThread.start()
 
 @eel.expose
 def mousemove(x,y):
-    print(x,y)
+    UDPSocket.sendto(f"mm,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+''' end access '''
 
 def close_callback(strPath, sockets):
+    global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving, isSending
     print(f"close:{strPath},{sockets}")
-    if strPath=="show.html":
-        TCPSocket.send(f"closeShow,{targetUid}".encode('utf-8'))
+    if strPath == "show.html": # access close
+        isRecving = False
+        TCPSocket.send(f"disconnection,{targetUid}".encode('utf-8'))
+        TCPSocket.close()
+        sys.exit()
+    elif strPath == "support.html": # support close
+        isSending = False
+        TCPSocket.send(f"unsupport,{targetUid}".encode('utf-8'))
         TCPSocket.close()
         sys.exit()
 
