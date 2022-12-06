@@ -12,6 +12,7 @@ UDP_PORT = 8888
 BUF_SIZE = 1024
 serverIP = "127.0.0.1"
 reServerAddress = None
+imageThread = None
 
 eel.init('web', allowed_extensions=['.js', '.html'])
 
@@ -35,6 +36,7 @@ def gethostname():
     return socket.gethostname()
 
 ''' supporter '''
+isSending = False
 def sendCheckTime():
     while True:
         time.sleep(60)
@@ -57,18 +59,29 @@ def getScreenshotToBase64():
     base64_str = str(base64.b64encode(byte_data))
     return base64_str[2:-1]
 
+def checkClose():
+    global isSending
+    msg = TCPSocket.recv(BUF_SIZE)
+    data = msg.decode('utf-8')
+    if data=="closeShow":
+        isSending = False
+        print("closeShow")
+
 @eel.expose
 def signSupporter(hostname):
+    global isSending
+    print("signSupporter")
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
-    t = threading.Thread(target=sendCheckTime)
-    t.start()
+    threading.Thread(target=sendCheckTime).start()
     msg = TCPSocket.recv(BUF_SIZE)
     data = msg.decode('utf-8').split(',')
     if data[0] == 'connect2Supporter':
+        isSending = True
         address = data[1].split(':')
         address = (address[0],int(address[1]))
         imgId = int(0)
-        while 1:
+        threading.Thread(target=checkClose).start()
+        while isSending:
             splitedData = dataSplit(getScreenshotToBase64()+'@')
             # data = getScreenshotToBase64()+'@'
             for data in splitedData:
@@ -76,8 +89,9 @@ def signSupporter(hostname):
                 time.sleep(0.04166667/len(splitedData))
                 # 24fps == 0.04166667
             imgId += 1
-    
+
 ''' access '''
+targetUid = None
 @eel.expose
 def getSupporter():
     TCPSocket.send("getSupporter".encode('utf-8'))
@@ -104,14 +118,23 @@ def getImageThread():
 
 @eel.expose
 def connect2Supporter(uid):
-    global BUF_SIZE, reServerAddress
+    global BUF_SIZE, reServerAddress, imageThread, targetUid
+    targetUid = uid
     BUF_SIZE = 65000
     TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
-    threading.Thread(target=getImageThread).start()
+    imageThread = threading.Thread(target=getImageThread)
+    imageThread.start()
 
 @eel.expose
 def mousemove(x,y):
     print(x,y)
 
-eel.start('index.html', size=(1000, 1000), port=0)  # Start
+def close_callback(strPath, sockets):
+    print(f"close:{strPath},{sockets}")
+    if strPath=="show.html":
+        TCPSocket.send(f"closeShow,{targetUid}".encode('utf-8'))
+        TCPSocket.close()
+        sys.exit()
+
+eel.start('index.html', size=(1000, 1000), port=0, close_callback=close_callback)  # Start
 TCPSocket.close()
