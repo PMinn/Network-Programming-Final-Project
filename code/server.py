@@ -47,6 +47,7 @@ def mainThread(clientSocket, rAddress):
         elif data[0] == 'connect2Supporter':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send(f'connect2Supporter,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
+            targetSupporter.isRuning = True
         elif data[0] == 'closeShow':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('closeShow'.encode('utf-8'))
