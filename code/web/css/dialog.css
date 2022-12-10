@@ -1,0 +1,28 @@
+.dialog-out {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000cc;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+.dialog-out.show {
+    display: flex !important;
+}
+
+.dialog {
+    padding: 80px 150px;
+    border-radius: 10px;
+    background-color: #0f0e17;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: #ffffff80 1px solid;
+}

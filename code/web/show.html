@@ -7,6 +7,8 @@
     <title>遠端存取 - 遠端桌面控制</title>
     <script type="text/javascript" src="/eel.js"></script>
     <link rel="stylesheet" href="./css/init.css">
+    <link rel="stylesheet" href="./css/btn.css">
+    <link rel="stylesheet" href="./css/dialog.css">
     <style>
         #outer {
             width: 100vw;
@@ -22,6 +24,7 @@
     <div id="outer">
         <img draggable="false" id="img">
     </div>
+    <script src="./js/dialog.js"></script>
     <script>
         const img = document.getElementById('img');
         const supportWidth = 1920;
@@ -94,6 +97,20 @@
         eel.expose(readImg);
         function readImg(base64) {
             img.src = base64;
+        }
+
+        eel.expose(targetDisconnect);
+        function targetDisconnect() {
+            var dialog = new Dialog({
+                text: '連線已斷開',
+                btns: [{
+                    text: '確定',
+                    onclick: () => {
+                        location = './access.html';
+                    }
+                }]
+            });
+            dialog.show();
         }
     </script>
 </body>

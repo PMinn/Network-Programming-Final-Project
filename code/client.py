@@ -12,7 +12,6 @@ UDP_PORT = 8888
 BUF_SIZE = 1024
 serverIP = "127.0.0.1"
 reServerAddress = None
-imageThread = None
 page = "index"
 
 eel.init('web', allowed_extensions=['.js', '.html'])
@@ -67,12 +66,16 @@ def getScreenshotToBase64():
     return base64_str[2:-1]
 
 def checkControl():
-    while 1:
-        data, address = UDPSocket.recvfrom(BUF_SIZE)
-        data = data.decode("utf-8").split(",")
-        if data[0]=='mm':
-            position = data[1].split("@")
-            pyautogui.moveTo(int(position[0]), int(position[1])) 
+    while isSending:
+        UDPSocket.settimeout(2)
+        try:
+            data, address = UDPSocket.recvfrom(BUF_SIZE)
+            data = data.decode("utf-8").split(",")
+            if data[0]=='mm':
+                position = data[1].split("@")
+                pyautogui.moveTo(int(position[0]), int(position[1])) 
+        except:
+            pass
 
 def sending(address):
     imgId = int(0)
@@ -87,24 +90,29 @@ def sending(address):
 def supporterMainThread():
     global isSending
     while 1:
-        msg = TCPSocket.recv(BUF_SIZE)
-        data = msg.decode('utf-8').split(',')
-        if data[0] == 'connect':
-            isSending = True
-            address = data[1].split(':')
-            address = (address[0],int(address[1]))
-            threading.Thread(target=checkControl).start()
-            threading.Thread(target=sending, args=(address,)).start()
-        elif data[0] == "disconnect":
-            isSending = False
-            print("Supporter get disconnect")
+        try:
+            msg = TCPSocket.recv(BUF_SIZE)
+        except:
+            break
+        else:
+            data = msg.decode('utf-8').split(',')
+            if data[0] == 'connect':
+                isSending = True
+                address = data[1].split(':')
+                address = (address[0],int(address[1]))
+                threading.Thread(target=checkControl, name="checkControl").start()
+                threading.Thread(target=sending, args=(address,), name="sending").start()
+            elif data[0] == "disconnect":
+                isSending = False
+                break
+                print("Supporter get disconnect")
 
 @eel.expose
 def signSupporter(hostname):
     print("signSupporter")
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
     # threading.Thread(target=sendCheckTime).start()
-    threading.Thread(target=supporterMainThread).start()
+    threading.Thread(target=supporterMainThread, name="SMT").start()
     
 ''' end supporter '''
 
@@ -117,6 +125,9 @@ def getSupporter():
     TCPSocket.send("getSupporter".encode('utf-8'))
     msg = TCPSocket.recv(BUF_SIZE)
     msg_utf8 = msg.decode('utf-8')
+    # print("--------")
+    # for thread in threading.enumerate(): 
+    #     print(thread.name)
     return msg_utf8
 
 def getImageThread():
@@ -142,9 +153,20 @@ def getImageThread():
             eel.readImg(img)
     UDPSocket.setblocking(True)
 
+def TCPThread():
+    global page, isRecving
+    while 1:
+        msg = TCPSocket.recv(BUF_SIZE)
+        data = msg.decode('utf-8').split(',')
+        if data[0] == 'disconnect':
+            page = "access"
+            isRecving = False
+            eel.targetDisconnect()
+            break
+
 @eel.expose
 def connect2Supporter(uid):
-    global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving
+    global BUF_SIZE, reServerAddress, targetUid, isRecving
     isRecving = True
     targetUid = uid
     TCPSocket.send(f"connect,{uid}".encode('utf-8'))
@@ -152,8 +174,8 @@ def connect2Supporter(uid):
     addr = msg.decode('utf-8').split(':')
     reServerAddress = (addr[0],int(addr[1]))
     BUF_SIZE = 65000
-    imageThread = threading.Thread(target=getImageThread)
-    imageThread.start()
+    threading.Thread(target=getImageThread, name="getImageThread").start()
+    threading.Thread(target=TCPThread, name="TCPThread").start()
 
 @eel.expose
 def mousemove(x,y):
@@ -162,18 +184,23 @@ def mousemove(x,y):
 ''' end access '''
 
 def close_callback(strPath, sockets):
-    global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving, isSending
+    global BUF_SIZE, reServerAddress, targetUid, isRecving, isSending
     print(f"close:{strPath},{sockets}")
     if strPath == "show.html": # connected access close
-        isRecving = False
-        TCPSocket.send(f"disconnect,{targetUid}".encode('utf-8'))
-        TCPSocket.close()
-        sys.exit()
+        if page == "show":
+            isRecving = False
+            TCPSocket.send(f"disconnect2S,{targetUid}".encode('utf-8'))
+            TCPSocket.close()
+            sys.exit()
+        else:
+            BUF_SIZE = 1024
+            isRecving = False
     elif strPath == "support.html": # support close
         if isSending:
             isSending = False
-            TCPSocket.send(f"disconnect,{targetUid}".encode('utf-8'))
+            TCPSocket.send("disconnect2A+offline".encode('utf-8'))
             TCPSocket.close()
+            time.sleep(1)
             sys.exit()
         else:
             TCPSocket.send("offline".encode('utf-8'))

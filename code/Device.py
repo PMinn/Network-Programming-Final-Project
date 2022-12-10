@@ -12,6 +12,7 @@ class Device():
         self.UDPaddress = None
         self.lastCheckTime = time.time()
         self.isRuning = False
+        self.connectTarget = ""
 
     def setUID(self, uid):
         self.uid = uid

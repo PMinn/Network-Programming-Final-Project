@@ -40,8 +40,8 @@ def mainThread(clientSocket, rAddress):
             device = Supporter(device, data[1])
             supporters.append(device)
             print('supporter',device.uid,data[1])
-        elif data[0] == 'checkTime':
-            device.checkTime()
+        # elif data[0] == 'checkTime':
+        #     device.checkTime()
         elif data[0] == 'getSupporter':
             clientSocket.send(str(supporters).encode('utf-8'))
         elif data[0] == 'connect':
@@ -49,10 +49,25 @@ def mainThread(clientSocket, rAddress):
             clientSocket.send(f"{targetSupporter.UDPaddress[0]}:{targetSupporter.UDPaddress[1]}".encode('utf-8'))
             targetSupporter.TCPsocket.send(f'connect,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
             targetSupporter.isRuning = True
-        elif data[0] == 'disconnect':
+            targetSupporter.connectTarget = device.uid
+            device.isRuning = True
+            device.connectTarget = data[1]
+        elif data[0] == 'disconnect2S':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('disconnect'.encode('utf-8'))
             targetSupporter.isRuning = False
+            device.isRuning = False
+        elif data[0] == 'disconnect2A+offline':
+            device.isRuning = False
+            targetAccesser = devices.find(device.connectTarget)
+            targetAccesser.isRuning = False
+            targetAccesser.TCPsocket.send('disconnect'.encode('utf-8'))
+
+            supporters.removeDevice(device)
+            devices.removeDevice(device)
+            print("offline",device.uid)
+            clientSocket.close()
+            break
         elif data[0] == 'offline':
             supporters.removeDevice(device)
             devices.removeDevice(device)
@@ -78,7 +93,7 @@ def UDPThread():
             pass
 
 try:
-    while True:
+    while 1:
         clientSocket, rAddress = TCPSocket.accept()
         try:
             threading.Thread(target=mainThread,args=(clientSocket, rAddress)).start()
