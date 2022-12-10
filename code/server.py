@@ -53,7 +53,7 @@ def mainThread(clientSocket, rAddress):
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('disconnection'.encode('utf-8'))
             targetSupporter.isRuning = False
-        elif data[0] == 'disconnection':
+        elif data[0] == 'unsupport':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('disconnection'.encode('utf-8'))
             targetSupporter.isRuning = False
