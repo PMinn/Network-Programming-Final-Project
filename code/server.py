@@ -40,23 +40,27 @@ def mainThread(clientSocket, rAddress):
             device = Supporter(device, data[1])
             supporters.append(device)
             print('supporter',device.uid,data[1])
-        # elif data[0] == 'checkTime':
-        #     device.checkTime()
         elif data[0] == 'getSupporter':
             clientSocket.send(str(supporters).encode('utf-8'))
         elif data[0] == 'connect':
             targetSupporter = supporters.find(data[1])
-            clientSocket.send(f"{targetSupporter.UDPaddress[0]}:{targetSupporter.UDPaddress[1]}".encode('utf-8'))
+            clientSocket.send(f"{targetSupporter.UDPaddress[0]}:{targetSupporter.UDPaddress[1]},{targetSupporter.screen_width},{targetSupporter.screen_height}".encode('utf-8'))
             targetSupporter.TCPsocket.send(f'connect,{device.UDPaddress[0]}:{device.UDPaddress[1]}'.encode('utf-8'))
             targetSupporter.isRuning = True
             targetSupporter.connectTarget = device.uid
             device.isRuning = True
             device.connectTarget = data[1]
-        elif data[0] == 'disconnect2S':
+        elif data[0] == 'disconnect2S+offline':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('disconnect'.encode('utf-8'))
             targetSupporter.isRuning = False
             device.isRuning = False
+
+            supporters.removeDevice(device)
+            devices.removeDevice(device)
+            print("offline",device.uid)
+            clientSocket.close()
+            break
         elif data[0] == 'disconnect2A+offline':
             device.isRuning = False
             targetAccesser = devices.find(device.connectTarget)
@@ -85,10 +89,11 @@ def UDPThread():
         try:
             UDPSocket.settimeout(5)
             data, address = UDPSocket.recvfrom(BUF_SIZE)
-            targetUID = data.decode('utf-8')
-            targetDevices = devices.find(targetUID)
+            data = data.decode('utf-8').split(',')
+            targetDevices = devices.find(data[0])
             if targetDevices != None:
                 targetDevices.setUDP(address)
+                targetDevices.setSize(int(data[1]),int(data[2]))
         except:
             pass
 

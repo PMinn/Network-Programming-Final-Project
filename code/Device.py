@@ -11,9 +11,15 @@ class Device():
         self.UDPaddress = None
         self.isRuning = False
         self.connectTarget = ""
+        self.screen_width = 0
+        self.screen_height = 0
 
     def setUID(self, uid):
         self.uid = uid
 
     def setUDP(self, UDPaddress):
         self.UDPaddress = UDPaddress
+
+    def setSize(self, screen_width, screen_height):
+        self.screen_width = screen_width
+        self.screen_height = screen_height

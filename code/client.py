@@ -20,13 +20,16 @@ TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 TCPSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+screen_width, screen_height = pyautogui.size()
+
 try:
     TCPSocket.connect((serverIP, TCP_PORT))
     uidCode = TCPSocket.recv(BUF_SIZE)
-    UDPSocket.sendto(uidCode, (serverIP, UDP_PORT))
+    remsg = f"{uidCode.decode('utf-8')},{screen_width},{screen_height}".encode('utf-8')
+    UDPSocket.sendto(remsg, (serverIP, UDP_PORT))
     msg = TCPSocket.recv(BUF_SIZE).decode('utf-8')
     while msg != 'A':
-        UDPSocket.sendto(uidCode, (serverIP, UDP_PORT))
+        UDPSocket.sendto(remsg, (serverIP, UDP_PORT))
         msg = TCPSocket.recv(BUF_SIZE).decode('utf-8')
 except Exception as msg:
     print("err:"+str(msg))
@@ -54,8 +57,8 @@ def dataSplit(data):
 
 def getScreenshotToBase64():
     img = pyautogui.screenshot() # PIL.Image.Image
-    width, height = img.size
-    # img = img.resize((width//2, height//2))
+    # width, height = img.size
+    img = img.resize((screen_width//2, screen_height//2))
     output_buffer = BytesIO()
     img.save(output_buffer, format='webp')
     byte_data = output_buffer.getvalue()
@@ -116,6 +119,7 @@ def signSupporter(hostname):
 ''' access '''
 targetUid = None
 isRecving = False
+
 @eel.expose
 def printThread():
     for thread in threading.enumerate(): 
@@ -169,8 +173,10 @@ def connect2Supporter(uid):
     targetUid = uid
     TCPSocket.send(f"connect,{uid}".encode('utf-8'))
     msg = TCPSocket.recv(BUF_SIZE)
-    addr = msg.decode('utf-8').split(':')
+    data = msg.decode('utf-8').split(',')
+    addr = data[0].split(":")
     reServerAddress = (addr[0],int(addr[1]))
+    eel.setImgSize(int(data[1]),int(data[2]))
     BUF_SIZE = 65000
     threading.Thread(target=getImageThread, name="getImageThread").start()
     threading.Thread(target=TCPThread, name="TCPThread").start()
@@ -187,7 +193,7 @@ def close_callback(strPath, sockets):
     if strPath == "show.html": # connected access close
         if page == "show":
             isRecving = False
-            TCPSocket.send(f"disconnect2S,{targetUid}".encode('utf-8'))
+            TCPSocket.send(f"disconnect2S+offline,{targetUid}".encode('utf-8'))
             TCPSocket.close()
             sys.exit()
         else:

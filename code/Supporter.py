@@ -4,6 +4,7 @@ class Supporter(Device):
     def __init__(self, device, hostname):
         super().__init__(device.TCPsocket, device.TCPaddress, device.uid)
         super().setUDP(device.UDPaddress)
+        super().setSize(device.screen_width, device.screen_height)
         self.hostname = hostname
 
     def __str__(self):

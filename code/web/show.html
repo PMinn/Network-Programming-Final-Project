@@ -27,9 +27,9 @@
     <script src="./js/dialog.js"></script>
     <script>
         const img = document.getElementById('img');
-        const supportWidth = 1920;
-        const supportHeight = 1080;
-        const supportRatio = supportWidth / supportHeight;
+        var supportWidth = 1920;
+        var supportHeight = 1080;
+        var supportRatio = supportWidth / supportHeight;
         var lastDblickPositionX = 0, lastDblickPositionY = 0;
         var keyborEvent = {
             shift: false,
@@ -111,6 +111,14 @@
                 }]
             });
             dialog.show();
+        }
+
+        eel.expose(setImgSize);
+        function setImgSize(width, height) {
+            supportWidth = width;
+            supportHeight = height;
+            supportRatio = supportWidth / supportHeight;
+            checkImgSize();
         }
     </script>
 </body>
