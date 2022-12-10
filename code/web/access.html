@@ -78,6 +78,13 @@
     <script>
         const page = document.getElementById('page');
 
+        function connect2support(uid) {
+            eel.changePage("show")()
+                .then(() => {
+                    location = `./show.html?uid=${uid}`;
+                })
+        }
+
         function renderList() {
             page.innerHTML = '';
             eel.getSupporter()()
@@ -102,7 +109,7 @@
                             computer.classList.add('hidden');
                         } else {
                             computer.onclick = () => {
-                                location = `./show.html?uid=${supporter.uid}`;
+                                connect2support(supporter.uid);
                             }
                         }
                         page.appendChild(computer);

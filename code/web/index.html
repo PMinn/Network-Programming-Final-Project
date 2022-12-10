@@ -71,10 +71,10 @@
     <nav>
         <div class="logo">遠端桌面控制</div>
         <div>
-            <a href="./access.html">
+            <a data-href="access">
                 <div class="btn">存取我的電腦</div>
             </a>
-            <a href="./support.html">
+            <a data-href="support">
                 <div class="btn">分享我的螢幕畫面</div>
             </a>
         </div>
@@ -88,7 +88,7 @@
             <div class="block">
                 <div>使用本電腦存取另一部電腦。</div>
                 <div>
-                    <a href="./access.html">
+                    <a data-href="access">
                         <div class="btn">存取我的電腦</div>
                     </a>
                 </div>
@@ -96,13 +96,23 @@
             <div class="block">
                 <div>分享螢幕畫面以提供遠端支援。</div>
                 <div>
-                    <a href="./support.html">
+                    <a data-href="support">
                         <div class="btn">分享我的螢幕畫面</div>
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => {
+                eel.changePage(a.dataset.href)()
+                    .then(() => {
+                        location = `./${a.dataset.href}.html`;
+                    })
+            })
+        })
+    </script>
 </body>
 
 </html>

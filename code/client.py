@@ -13,6 +13,7 @@ BUF_SIZE = 1024
 serverIP = "127.0.0.1"
 reServerAddress = None
 imageThread = None
+page = "index"
 
 eel.init('web', allowed_extensions=['.js', '.html'])
 
@@ -34,6 +35,12 @@ except Exception as msg:
 @eel.expose
 def gethostname():
     return socket.gethostname()
+
+@eel.expose
+def changePage(targetPage):
+    global page
+    page = targetPage
+    return targetPage
 
 ''' supporter '''
 isSending = False
@@ -71,31 +78,34 @@ def sending(address):
     imgId = int(0)
     while isSending:
         splitedData = dataSplit(getScreenshotToBase64()+'@')
-        # data = getScreenshotToBase64()+'@'
         for data in splitedData:
             UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
             time.sleep(0.04166667/len(splitedData))
             # 24fps == 0.04166667
         imgId += 1
 
-@eel.expose
-def signSupporter(hostname):
+def supporterMainThread():
     global isSending
-    print("signSupporter")
-    TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
-    threading.Thread(target=sendCheckTime).start()
     while 1:
         msg = TCPSocket.recv(BUF_SIZE)
         data = msg.decode('utf-8').split(',')
-        if data[0] == 'connect2Supporter':
+        if data[0] == 'connect':
             isSending = True
             address = data[1].split(':')
             address = (address[0],int(address[1]))
             threading.Thread(target=checkControl).start()
             threading.Thread(target=sending, args=(address,)).start()
-        elif data[0] == "disconnection":
+        elif data[0] == "disconnect":
             isSending = False
-            print("disconnection")
+            print("Supporter get disconnect")
+
+@eel.expose
+def signSupporter(hostname):
+    print("signSupporter")
+    TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
+    # threading.Thread(target=sendCheckTime).start()
+    threading.Thread(target=supporterMainThread).start()
+    
 ''' end supporter '''
 
 ''' access '''
@@ -137,7 +147,7 @@ def connect2Supporter(uid):
     global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving
     isRecving = True
     targetUid = uid
-    TCPSocket.send(f"connect2Supporter,{uid}".encode('utf-8'))
+    TCPSocket.send(f"connect,{uid}".encode('utf-8'))
     msg = TCPSocket.recv(BUF_SIZE)
     addr = msg.decode('utf-8').split(':')
     reServerAddress = (addr[0],int(addr[1]))
@@ -154,16 +164,31 @@ def mousemove(x,y):
 def close_callback(strPath, sockets):
     global BUF_SIZE, reServerAddress, imageThread, targetUid, isRecving, isSending
     print(f"close:{strPath},{sockets}")
-    if strPath == "show.html": # access close
+    if strPath == "show.html": # connected access close
         isRecving = False
-        TCPSocket.send(f"disconnection,{targetUid}".encode('utf-8'))
+        TCPSocket.send(f"disconnect,{targetUid}".encode('utf-8'))
         TCPSocket.close()
         sys.exit()
     elif strPath == "support.html": # support close
-        isSending = False
-        TCPSocket.send(f"unsupport,{targetUid}".encode('utf-8'))
-        TCPSocket.close()
-        sys.exit()
+        if isSending:
+            isSending = False
+            TCPSocket.send(f"disconnect,{targetUid}".encode('utf-8'))
+            TCPSocket.close()
+            sys.exit()
+        else:
+            TCPSocket.send("offline".encode('utf-8'))
+            TCPSocket.close()
+            sys.exit()
+    elif strPath == "access.html": # access close
+        if page == "access":
+            TCPSocket.send(f"offline".encode('utf-8'))
+            TCPSocket.close()
+            sys.exit()
+    elif strPath == "index.html": # access close
+        if page == "index":
+            TCPSocket.send(f"offline".encode('utf-8'))
+            TCPSocket.close()
+            sys.exit()
 
 eel.start('index.html', size=(1000, 1000), port=0, close_callback=close_callback)  # Start
 TCPSocket.close()
