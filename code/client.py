@@ -44,10 +44,6 @@ def changePage(targetPage):
 ''' supporter '''
 isSending = False
 isSupport = False
-def sendCheckTime():
-    while True:
-        time.sleep(60)
-        TCPSocket.send("checkTime".encode('utf-8'))
 
 def dataSplit(data):
     result = []
@@ -113,7 +109,6 @@ def supporterMainThread():
 def signSupporter(hostname):
     print("signSupporter")
     TCPSocket.send(f"signSupporter,{hostname}".encode('utf-8'))
-    # threading.Thread(target=sendCheckTime).start()
     threading.Thread(target=supporterMainThread, name="SMT").start()
     
 ''' end supporter '''

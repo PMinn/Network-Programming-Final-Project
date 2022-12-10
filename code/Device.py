@@ -1,5 +1,4 @@
 import uuid
-import time
 
 class Device():
     def __init__(self, TCPsocket, TCPaddress, uid = None):
@@ -10,7 +9,6 @@ class Device():
         else:
             self.uid = uid
         self.UDPaddress = None
-        self.lastCheckTime = time.time()
         self.isRuning = False
         self.connectTarget = ""
 
@@ -19,6 +17,3 @@ class Device():
 
     def setUDP(self, UDPaddress):
         self.UDPaddress = UDPaddress
-
-    def checkTime(self):
-        self.lastCheckTime = time.time()

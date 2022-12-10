@@ -8,6 +8,6 @@ class Supporter(Device):
 
     def __str__(self):
         json = "{"
-        json += f'"hostname":"{str(self.hostname)}","ip":"{str(self.TCPaddress[0])}","port":{str(self.TCPaddress[1])},"lastCheckTime":{str(self.lastCheckTime)},"uid":"{str(self.uid)}","isRuning":"{str(self.isRuning)}"'
+        json += f'"hostname":"{str(self.hostname)}","ip":"{str(self.TCPaddress[0])}","port":{str(self.TCPaddress[1])},"uid":"{str(self.uid)}","isRuning":"{str(self.isRuning)}"'
         json += "}"
         return json

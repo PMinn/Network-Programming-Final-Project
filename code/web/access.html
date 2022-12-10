@@ -95,15 +95,13 @@
                         var computer = document.createElement('div');
                         computer.classList.add('computer');
                         var lastCheckTime = new Date(parseFloat(supporter.lastCheckTime) * 1000);
-                        var checkTimeLable = "線上";
-                        if (new Date() - lastCheckTime > 120000) checkTimeLable = lastCheckTime.toLocaleString();
                         computer.innerHTML = `
                             <div class="icon">
                                 <img src="./media/monitor.png" alt="">
                             </div>
                             <div class="info">
                                 <div class="name">${supporter.hostname}</div>
-                                <div>${checkTimeLable}</div>
+                                <div>線上</div>
                             </div>
                         `;
                         if (supporter.isRuning == "True") {
