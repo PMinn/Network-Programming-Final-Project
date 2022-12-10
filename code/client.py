@@ -43,6 +43,7 @@ def changePage(targetPage):
 
 ''' supporter '''
 isSending = False
+isSupport = False
 def sendCheckTime():
     while True:
         time.sleep(60)
@@ -88,12 +89,14 @@ def sending(address):
         imgId += 1
 
 def supporterMainThread():
-    global isSending
-    while 1:
+    global isSending, isSupport
+    isSupport = True
+    while isSupport:
+        TCPSocket.settimeout(1)
         try:
             msg = TCPSocket.recv(BUF_SIZE)
         except:
-            break
+            pass
         else:
             data = msg.decode('utf-8').split(',')
             if data[0] == 'connect':
@@ -104,7 +107,6 @@ def supporterMainThread():
                 threading.Thread(target=sending, args=(address,), name="sending").start()
             elif data[0] == "disconnect":
                 isSending = False
-                break
                 print("Supporter get disconnect")
 
 @eel.expose
@@ -119,23 +121,24 @@ def signSupporter(hostname):
 ''' access '''
 targetUid = None
 isRecving = False
+@eel.expose
+def printThread():
+    for thread in threading.enumerate(): 
+        print(thread.name)
 
 @eel.expose
 def getSupporter():
     TCPSocket.send("getSupporter".encode('utf-8'))
     msg = TCPSocket.recv(BUF_SIZE)
     msg_utf8 = msg.decode('utf-8')
-    # print("--------")
-    # for thread in threading.enumerate(): 
-    #     print(thread.name)
     return msg_utf8
 
 def getImageThread():
-    UDPSocket.setblocking(False)
     while isRecving:
         data = ""
         imgId = 0
-        while len(data) == 0 or data[-1] != '@' and isRecving:
+        while (len(data) == 0 or data[-1] != '@') and isRecving:
+            UDPSocket.settimeout(0.1)
             try:
                 server_reply, reServerAddress = UDPSocket.recvfrom(BUF_SIZE)
             except:
@@ -151,16 +154,16 @@ def getImageThread():
         if len(data) > 0 and data[-1] == '@':
             img = f'data:image/png;base64,{data[:-1]}'
             eel.readImg(img)
-    UDPSocket.setblocking(True)
 
 def TCPThread():
-    global page, isRecving
+    global page, isRecving, BUF_SIZE
     while 1:
         msg = TCPSocket.recv(BUF_SIZE)
         data = msg.decode('utf-8').split(',')
         if data[0] == 'disconnect':
             page = "access"
             isRecving = False
+            BUF_SIZE = 1024
             eel.targetDisconnect()
             break
 
@@ -198,9 +201,10 @@ def close_callback(strPath, sockets):
     elif strPath == "support.html": # support close
         if isSending:
             isSending = False
+            isSupport = False
             TCPSocket.send("disconnect2A+offline".encode('utf-8'))
             TCPSocket.close()
-            time.sleep(1)
+            time.sleep(1.5)
             sys.exit()
         else:
             TCPSocket.send("offline".encode('utf-8'))
