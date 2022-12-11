@@ -80,7 +80,40 @@
             color: #fffffe;
             border: 0;
         }
-        #next:disabled{
+
+        #next:disabled {
+            background-color: #75440c;
+        }
+
+        #connection {
+            width: 80vw;
+            max-width: 996px;
+            border: 2px #000 solid;
+            border-radius: 10px;
+            display: none;
+            justify-content: space-evenly;
+            align-items: center;
+            margin-top: 40px;
+            padding: 40px;
+            background-color: #fffffe;
+            color: #000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #connection .btn {
+            margin-top: 12px;
+            background-color: #ff8906;
+            color: #fffffe;
+            border: 0;
+        }
+
+        #connection .btn:hover {
+            color: #ff8906;
+            background-color: #fffffe;
+        }
+
+        #connection .btn:disabled {
             background-color: #75440c;
         }
     </style>
@@ -104,10 +137,16 @@
                 </div>
             </div>
         </div>
+        <div id="connection">
+            <div id="targetIP">連線中</div>
+            <div class="btn" onclick="disconnect()">斷開連接</div>
+        </div>
     </div>
     <script>
         const hostname = document.getElementById('hostname');
         const nextBtn = document.getElementById('next');
+        const connection = document.getElementById('connection');
+        const targetIP = document.getElementById('targetIP');
 
         async function gethostname() {
             return await eel.gethostname()();
@@ -123,7 +162,30 @@
             console.log('nextBtn click')
             eel.signSupporter(hostname.value);
             nextBtn.disabled = true;
+            hostname.disabled = true;
         })
+
+        eel.expose(supporterConnected);
+        function supporterConnected(address) {
+            targetIP.innerText = `${address} 連線中`;
+            connection.style.display = 'flex';
+            setTimeout(() => {
+                connection.style.opacity = '1';
+            }, 100)
+        }
+
+        eel.expose(supporterDisonnected);
+        function supporterDisonnected() {
+            connection.style.opacity = '0';
+            setTimeout(() => {
+                connection.style.display = 'none';
+            }, 400)
+        }
+
+        function disconnect() {
+            eel.supporterDisconnect()()
+                .then(supporterDisonnected);
+        }
     </script>
 </body>
 

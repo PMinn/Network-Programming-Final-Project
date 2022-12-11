@@ -50,6 +50,11 @@ def mainThread(clientSocket, rAddress):
             targetSupporter.connectTarget = device.uid
             device.isRuning = True
             device.connectTarget = data[1]
+        elif data[0] == 'disconnect2S':
+            targetSupporter = supporters.find(data[1])
+            targetSupporter.TCPsocket.send('disconnect'.encode('utf-8'))
+            targetSupporter.isRuning = False
+            device.isRuning = False
         elif data[0] == 'disconnect2S+offline':
             targetSupporter = supporters.find(data[1])
             targetSupporter.TCPsocket.send('disconnect'.encode('utf-8'))
@@ -61,6 +66,11 @@ def mainThread(clientSocket, rAddress):
             print("offline",device.uid)
             clientSocket.close()
             break
+        elif data[0] == 'disconnect2A':
+            device.isRuning = False
+            targetAccesser = devices.find(device.connectTarget)
+            targetAccesser.isRuning = False
+            targetAccesser.TCPsocket.send('disconnect'.encode('utf-8'))
         elif data[0] == 'disconnect2A+offline':
             device.isRuning = False
             targetAccesser = devices.find(device.connectTarget)

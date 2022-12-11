@@ -17,6 +17,12 @@
             align-items: center;
             justify-content: center;
         }
+
+        .disconnect-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+        }
     </style>
 </head>
 
@@ -24,6 +30,7 @@
     <div id="outer">
         <img draggable="false" id="img">
     </div>
+    <div class="btn disconnect-btn" onclick="disconnect()">斷開連接</div>
     <script src="./js/dialog.js"></script>
     <script>
         const img = document.getElementById('img');
@@ -106,7 +113,10 @@
                 btns: [{
                     text: '確定',
                     onclick: () => {
-                        location = './access.html';
+                        eel.changePage('access')()
+                            .then(() => {
+                                location = './access.html';
+                            })
                     }
                 }]
             });
@@ -119,6 +129,13 @@
             supportHeight = height;
             supportRatio = supportWidth / supportHeight;
             checkImgSize();
+        }
+
+        function disconnect() {
+            eel.accessDisconnect()()
+                .then(() => {
+                    location = './access.html';
+                })
         }
     </script>
 </body>
