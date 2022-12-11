@@ -21,42 +21,85 @@ function checkImgSize() {
 window.addEventListener('resize', checkImgSize, true);
 checkImgSize();
 
+var lastMoveTime = new Date();
 img.addEventListener('mousemove', e => {
-    console.log(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
-    eel.mousemove(e.offsetX * supportWidth / img.width, e.offsetY * supportHeight / img.height)
+    var now = new Date();
+    if (now - lastMoveTime > 200) {
+        eel.mousemove(Math.floor(e.offsetX * supportWidth / img.width), Math.floor(e.offsetY * supportHeight / img.height));
+        lastMoveTime = now;
+    }
 })
 
-img.addEventListener('click', e => {
+document.body.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+}, false);
+document.body.addEventListener('mousedown', e => mouse_event(0, e), false);
+document.body.addEventListener('mouseup', e => mouse_event(1, e), false);
+function mouse_event(type, e) {
     var clickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
     var clickPositionY = Math.floor(e.offsetY * supportHeight / img.height);
-    // setTimeout(() => {
-    //     if (clickPositionX != lastDblickPositionX || clickPositionY != lastDblickPositionY)
-    console.log('click', clickPositionX, clickPositionY);
-    // }, 300)
+    if (e.isTrusted) {
+        if (type == 0) {
+            if (e.button == 0) eel.mousedownLeft(clickPositionX, clickPositionY);
+            else if (e.button == 2) eel.mousedownRight(clickPositionX, clickPositionY);
+        } else {
+            if (e.button == 0) eel.mouseupLeft(clickPositionX, clickPositionY);
+            else if (e.button == 2) eel.mouseupRight(clickPositionX, clickPositionY);
+        }
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+}
+
+img.addEventListener('wheel', e => {
+    eel.wheel(e.deltaX, e.deltaY);
+    e.stopPropagation();
+    return false;
 });
 
-// img.addEventListener('dblclick', e => {
-//     lastDblickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
-//     lastDblickPositionY = Math.floor(e.offsetY * supportHeight / img.height)
-//     console.log('dblclick', lastDblickPositionX, lastDblickPositionY);
-// });
-document.addEventListener("keydown", e => {
-    console.log('keydown', event)
-    keyborEvent.shift = e.shiftKey;
-    keyborEvent.ctr = e.ctrlKey;
-    keyborEvent.alt = e.altKey;
+var keyTable = ['\t', '\n', '\r', ' ', '!', '"', '#', '$', '%', '&', "'", '(',
+    ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+    'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~',
+    'accept', 'add', 'alt', 'altleft', 'altright', 'apps', 'backspace',
+    'browserback', 'browserfavorites', 'browserforward', 'browserhome',
+    'browserrefresh', 'browsersearch', 'browserstop', 'capslock', 'clear',
+    'convert', 'ctrl', 'ctrlleft', 'ctrlright', 'decimal', 'del', 'delete',
+    'divide', 'down', 'end', 'enter', 'esc', 'escape', 'execute', 'f1', 'f10',
+    'f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f2', 'f20',
+    'f21', 'f22', 'f23', 'f24', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9',
+    'final', 'fn', 'hanguel', 'hangul', 'hanja', 'help', 'home', 'insert', 'junja',
+    'kana', 'kanji', 'launchapp1', 'launchapp2', 'launchmail',
+    'launchmediaselect', 'left', 'modechange', 'multiply', 'nexttrack',
+    'nonconvert', 'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6',
+    'num7', 'num8', 'num9', 'numlock', 'pagedown', 'pageup', 'pause', 'pgdn',
+    'pgup', 'playpause', 'prevtrack', 'print', 'printscreen', 'prntscrn',
+    'prtsc', 'prtscr', 'return', 'right', 'scrolllock', 'select', 'separator',
+    'shift', 'shiftleft', 'shiftright', 'sleep', 'space', 'stop', 'subtract', 'tab',
+    'up', 'volumedown', 'volumemute', 'volumeup', 'win', 'winleft', 'winright', 'yen',
+    'command', 'option', 'optionleft', 'optionright'];
+function convertKey(e) {
+    var keyLowerCase = e.key.toLowerCase();
+    var key = '';
+    if (keyTable.includes(keyLowerCase)) key = keyLowerCase;
+    else if (keyLowerCase == 'control') key = 'ctrl'
+    return key;
+}
+
+img.addEventListener("keydown", e => {
+    var key = convertKey(e);
+    eel.keydown(key);
     e.preventDefault();
     e.stopPropagation();
 }, false);
-document.addEventListener("keypress", e => {
-    e.preventDefault();
-    e.stopPropagation();
-}, false);
-document.addEventListener("keyup", e => {
-    console.log('keyup', e)
-    keyborEvent.shift = e.shiftKey;
-    keyborEvent.ctr = e.ctrlKey;
-    keyborEvent.alt = e.altKey;
+
+img.addEventListener("keyup", e => {
+    var key = convertKey(e);
+    eel.keyup(key);
     e.preventDefault();
     e.stopPropagation();
 }, false);

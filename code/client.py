@@ -71,9 +71,29 @@ def checkControl():
         try:
             data, address = UDPSocket.recvfrom(BUF_SIZE)
             data = data.decode("utf-8").split(",")
-            if data[0]=='mm':
+            if data[0] == 'mm':
                 position = data[1].split("@")
                 pyautogui.moveTo(int(position[0]), int(position[1])) 
+            elif data[0] == 'kd':
+                pyautogui.keyDown(data[1])
+            elif data[0] == 'ku':
+                pyautogui.keyUp(data[1])
+            elif data[0] == 'mdl':
+                position = data[1].split("@")
+                pyautogui.mouseDown(x=int(position[0]), y=int(position[1]))
+            elif data[0] == 'mul':
+                position = data[1].split("@")
+                pyautogui.mouseUp(x=int(position[0]), y=int(position[1]))
+            elif data[0] == 'mdr':
+                position = data[1].split("@")
+                pyautogui.mouseDown(x=int(position[0]), y=int(position[1]), button='right')
+            elif data[0] == 'mur':
+                position = data[1].split("@")
+                pyautogui.mouseUp(x=int(position[0]), y=int(position[1]), button='right')
+            elif data[0] == 'wl':
+                value = data[1].split("@")
+                pyautogui.hscroll(int(value[0]))
+                pyautogui.vscroll(int(value[1]))
         except:
             pass
 
@@ -199,6 +219,34 @@ def connect2Supporter(uid):
 @eel.expose
 def mousemove(x,y):
     UDPSocket.sendto(f"mm,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def mousedownLeft(x,y):
+    UDPSocket.sendto(f"mdl,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def mousedownRight(x,y):
+    UDPSocket.sendto(f"mdr,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def mouseupLeft(x,y):
+    UDPSocket.sendto(f"mul,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def mouseupRight(x,y):
+    UDPSocket.sendto(f"mur,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def wheel(x,y):
+    UDPSocket.sendto(f"wl,{int(x)}@{int(y)}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def keydown(key):
+    UDPSocket.sendto(f"kd,{key}".encode('utf-8'), reServerAddress)
+
+@eel.expose
+def keyup(key):
+    UDPSocket.sendto(f"ku,{key}".encode('utf-8'), reServerAddress)
 
 @eel.expose
 def accessDisconnect():
