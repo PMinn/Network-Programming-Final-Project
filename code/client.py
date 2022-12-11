@@ -274,9 +274,9 @@ def close_callback(strPath, sockets):
                 TCPSocket.send(f"offline".encode('utf-8'))
                 TCPSocket.close()
                 sys.exit()
-        # else:
-        #     BUF_SIZE = 1024
-        #     isRecving = False
+        else:
+            BUF_SIZE = 1024
+            isRecving = False
     elif strPath == "support.html": # support close
         if isSending:
             isSending = False
