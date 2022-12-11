@@ -4,8 +4,7 @@ import time
 import threading
 import sys
 import pyautogui
-import base64
-from io import BytesIO
+import imageData
 
 TCP_PORT = 6666
 UDP_PORT = 8888
@@ -48,23 +47,6 @@ def changePage(targetPage):
 isSending = False
 isSupport = False
 
-def dataSplit(data):
-    result = []
-    n = 60000
-    for idx in range(0, len(data), n):
-        result.append(data[idx : idx + n])
-    return result
-
-def getScreenshotToBase64():
-    img = pyautogui.screenshot() # PIL.Image.Image
-    # width, height = img.size
-    img = img.resize((screen_width//2, screen_height//2))
-    output_buffer = BytesIO()
-    img.save(output_buffer, format='webp')
-    byte_data = output_buffer.getvalue()
-    base64_str = str(base64.b64encode(byte_data))
-    return base64_str[2:-1]
-
 def checkControl():
     while isSending:
         UDPSocket.settimeout(2)
@@ -100,7 +82,7 @@ def checkControl():
 def sending(address):
     imgId = int(0)
     while isSending:
-        splitedData = dataSplit(getScreenshotToBase64()+'@')
+        splitedData = imageData.dataSplit(imageData.getScreenshotToBase64(screen_width, screen_height)+'@')
         for data in splitedData:
             UDPSocket.sendto(('{:06d}'.format(imgId) + data).encode('utf-8'), address)
             time.sleep(0.04166667/len(splitedData))
