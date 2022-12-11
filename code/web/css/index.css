@@ -1,0 +1,54 @@
+.flex {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.page {
+    margin: 0 auto;
+    width: 920px;
+    height: calc(100vh - 64px);
+}
+
+.page>* {
+    margin-bottom: 64px;
+}
+
+.header {
+    justify-content: center;
+}
+
+.header .h1 {
+    font-size: 36px;
+    width: 388px;
+}
+
+.header img {
+    width: 300px;
+    margin-left: 32px;
+}
+
+.block-group {
+    justify-content: space-around;
+}
+
+.block {
+    display: flex;
+    flex-direction: column;
+    width: 420px;
+    border-radius: 6px;
+    border: 2px #777777 solid;
+    text-align: center;
+}
+
+.block>div:first-child {
+    padding: 24px;
+}
+
+.block>div:last-child {
+    padding: 0 24px 24px 24px;
+}

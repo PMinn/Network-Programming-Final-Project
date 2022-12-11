@@ -8,57 +8,7 @@
     <link rel="stylesheet" href="./css/init.css">
     <link rel="stylesheet" href="./css/nav.css">
     <script type="text/javascript" src="/eel.js"></script>
-    <style>
-        .page {
-            margin: 0 auto;
-            width: 100vw;
-            height: calc(100vh - 64px);
-            overflow-y: auto;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .computer {
-            width: 80vw;
-            max-width: 996px;
-            border: 2px #000 solid;
-            border-radius: 10px;
-            display: flex;
-            margin-top: 40px;
-            padding: 40px;
-            background-color: #fffffe;
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .computer.hidden {
-            opacity: 0.5;
-        }
-
-        .icon {
-            background-color: #ff8906;
-            border-radius: 50% 80% 70% 70%;
-            height: 96px;
-            width: 96px;
-        }
-
-        .icon img {
-            width: 50%;
-            margin: 25%;
-        }
-
-        .info {
-            font-weight: 400;
-            margin-left: 32px;
-        }
-
-        .name {
-            font-size: 24pt;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/access.css">
 </head>
 
 <body>
@@ -66,60 +16,8 @@
         <div class="logo">遠端桌面控制</div>
     </nav>
     <div class="page" id="page">
-        <!-- <div class="computer">
-            <div class="icon">
-                <img src="./media/monitor.png" alt="">
-            </div>
-            <div class="info">
-                <div class="name">Computer</div>
-                <div>線上</div>
-            </div>
-        </div> -->
     </div>
-    <script>
-        const page = document.getElementById('page');
-
-        function connect2support(uid) {
-            eel.changePage("show")()
-                .then(() => {
-                    location = `./show.html?uid=${uid}`;
-                })
-        }
-
-        function renderList() {
-            page.innerHTML = '';
-            eel.getSupporter()()
-                .then(supporters => {
-                    supporters = JSON.parse(supporters);
-                    supporters.forEach(supporter => {
-                        var computer = document.createElement('div');
-                        computer.classList.add('computer');
-                        var lastCheckTime = new Date(parseFloat(supporter.lastCheckTime) * 1000);
-                        computer.innerHTML = `
-                            <div class="icon">
-                                <img src="./media/monitor.png" alt="">
-                            </div>
-                            <div class="info">
-                                <div class="name">${supporter.hostname}</div>
-                                <div>線上</div>
-                            </div>
-                        `;
-                        if (supporter.isRuning == "True") {
-                            computer.classList.add('hidden');
-                        } else {
-                            computer.onclick = () => {
-                                connect2support(supporter.uid);
-                            }
-                        }
-                        page.appendChild(computer);
-                    });
-                    console.log(supporters)
-                })
-        }
-
-        renderList();
-        setInterval(renderList, 2000);
-    </script>
+    <script src="./js/access.js"></script>
 </body>
 
 </html>

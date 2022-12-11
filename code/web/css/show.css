@@ -1,0 +1,13 @@
+#outer {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disconnect-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}

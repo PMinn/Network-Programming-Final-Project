@@ -1,0 +1,49 @@
+.page {
+    margin: 0 auto;
+    width: 100vw;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.computer {
+    width: 80vw;
+    max-width: 996px;
+    border: 2px #000 solid;
+    border-radius: 10px;
+    display: flex;
+    margin-top: 40px;
+    padding: 40px;
+    background-color: #fffffe;
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.computer.hidden {
+    opacity: 0.5;
+}
+
+.icon {
+    background-color: #ff8906;
+    border-radius: 50% 80% 70% 70%;
+    height: 96px;
+    width: 96px;
+}
+
+.icon img {
+    width: 50%;
+    margin: 25%;
+}
+
+.info {
+    font-weight: 400;
+    margin-left: 32px;
+}
+
+.name {
+    font-size: 24pt;
+}
