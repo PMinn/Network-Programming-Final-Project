@@ -30,13 +30,13 @@ img.addEventListener('mousemove', e => {
     }
 })
 
-document.body.addEventListener('contextmenu', e => {
+img.addEventListener('contextmenu', e => {
     e.preventDefault();
     e.stopPropagation();
     return false;
 }, false);
-document.body.addEventListener('mousedown', e => mouse_event(0, e), false);
-document.body.addEventListener('mouseup', e => mouse_event(1, e), false);
+img.addEventListener('mousedown', e => mouse_event(0, e), false);
+img.addEventListener('mouseup', e => mouse_event(1, e), false);
 function mouse_event(type, e) {
     var clickPositionX = Math.floor(e.offsetX * supportWidth / img.width);
     var clickPositionY = Math.floor(e.offsetY * supportHeight / img.height);
